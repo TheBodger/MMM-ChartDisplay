@@ -14,6 +14,7 @@ var NodeHelper = require("node_helper");
 //global Var
 
 var moment = require("moment");
+var linq = require("linq");
 
 //pseudo structures for commonality across all modules
 //obtained from a helper file of modules
@@ -106,7 +107,7 @@ module.exports = NodeHelper.create({
 
 			if (this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] == null) {
 
-				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { items: [] };
+				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { items: [],groupeditems:[] };
 
 			}
 
@@ -196,6 +197,8 @@ module.exports = NodeHelper.create({
 
 		}
 
+		console.error(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items);
+
 		// -------------------------------------- aggregator sort stage ------------------------------------------
 
 
@@ -203,8 +206,41 @@ module.exports = NodeHelper.create({
 
 		//we have to group the data together now using the groupby key 
 		//as the grouping 
+		//and also prepare the data to be merged in the final step using the template
 
+		if (groupingrules.groupby != null) { //if not set then we just process the items straight into the merge step
 
+			//clear the grouping so we can start afresh
+
+			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = [];
+
+			//use linq to get a nice group by set
+			//build the query from the paramters
+
+			// use fourth argument to groupBy (compareSelector)
+			var teams = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+				.groupBy(
+					"$.timestampformat",
+					"'{'+$.subjectname+':'+$.subject+','+$.valuename+':'+$.value+'}'",
+					function (key, group) { return { s: key, o: group.toJoinedString(',') } },
+					function (key) { return key.toString() }).toArray();
+
+			//console.info(teams);
+
+			//convert the result to json
+
+			var t = JSON.stringify("[" + teams["o"] + "]");
+
+			console.info(t);
+
+			//post process into the grouped items array
+
+		}
+		else {
+			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items
+		}
+
+		// merge step
 
 
 

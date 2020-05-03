@@ -48,7 +48,10 @@ Module.register("MMM-ChartDisplay", {
 			//field names are standard / not the renamed ones // handle in the code
 			outputsetid: null,						// the field name to be used as the setid, if null uses "1","2","3"
 			//template will take form of "setid".fieldname (i.e. "births".subject )
-													
+			template: null							// the output set template,
+													// setid will be replaced with the setid of the incoming data to merge
+													// a format "{'setid'.timestampformat:[{'setid'.subject,'setid'.value}]}"
+													// example: {test.timstampformat:[{test.subject,test.value}]}
 
 		},
 	},
