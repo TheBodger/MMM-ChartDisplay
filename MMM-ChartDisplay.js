@@ -11,7 +11,7 @@ var startTime = new Date(); //use for getting elapsed times during debugging
 
 var feedDisplayPayload = { consumerid: '', providerid: '', payload: '' };
 
-Module.register("MMM-FeedDisplay", {
+Module.register("MMM-ChartDisplay", {
 
 	// Default module config.
 	// WARNING - added 2 layers of config, so make sure you have a display and an article section as parents to the settings
@@ -77,7 +77,7 @@ Module.register("MMM-FeedDisplay", {
 			Log.log("ALL MODULES STARTED");
 		}
 
-		if (notification == 'FEED_PROVIDER_DATA') {
+		if (notification == 'CHART_PROVIDER_DATA') {
 			//some one said they have data, it might be for me !
 			
 			if (payload.consumerid == this.config.id) {
