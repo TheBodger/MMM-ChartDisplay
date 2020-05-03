@@ -13,6 +13,8 @@ var NodeHelper = require("node_helper");
 
 //global Var
 
+var moment = require("moment");
+
 //pseudo structures for commonality across all modules
 //obtained from a helper file of modules
 
@@ -67,6 +69,8 @@ module.exports = NodeHelper.create({
 
 		//determine what the feedstorekey is
 
+		var feedstorekey = payload.providerid;
+
 		//now we add the provided feeds to the feedstorage
 		//we support multiple sets of data in the feedsets area
 		//assumption is that the provider will NOT send duplicate feeds so we just add them to the end
@@ -78,63 +82,137 @@ module.exports = NodeHelper.create({
 
 		//we will need to store all the separate sets of data provided here/ TBD
 
-		//loop on sets first TBD
-
-		var setkey = payload.title; //will need to change to the item set key from the provider
-
 		//Determine if we have an entry for the moduleinstance of the display module in feedstorage
 
 		if (this.consumerstorage[moduleinstance].feedstorage[feedstorekey] == null) {
-
-			var sortkeys = [];	// we only use it here, in the else we push direct to the main storage
-			var sortidx = -1;	// we only use it here, in the else we use the one we store in main storage
 
 			feedstorage.key = feedstorekey;
 			feedstorage.titles = [payload.title];				// add the first title we get, which will be many if this is a merged set of feeds
 			feedstorage.sourcetitles = [payload.sourcetitle];	// add the first sourcetitle we get, which will be many if this is a merged set of feeds
 			feedstorage.providers = [payload.providerid];		// add the first provider we get, whic will be many if there are multiple providers and merged
 
-			feedstorage.feedsets[setkey] = { items: [] };
-
 			this.consumerstorage[moduleinstance].feedstorage[feedstorekey] = feedstorage;
 		}
 
-		//determine if we have an entry for the data set just received
+		//determine if we have an entry for the data set(s) just received
 
-		if (this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setkey] == null) {
+		//feedstorage.feedsets[setkey] = { items: [] };
 
-			this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setkey] = { items: [] };
+		//loop on sets first TBD
 
-		}
+		for (var didx = 0; didx < payload.payload.length;didx++) {
 
-		//now we have the feedstorage setup, we can process the items
+			var setid = payload.payload[didx].setid; 
 
-		payload.payload.forEach(function (item) {
+			if (this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] == null) {
 
-			// -------------------------filter stage -----------------------------------------------
+				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { items: [] };
 
-			//check to see if we want to drop/keep this item because of a filter rule match
-
-			var keepitem = false;
-
-			if (keepitem) {
-
-				// ---------------------------- reformat/rename stage ----------------------------------
-
-				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setkey].items.push(item);
 			}
 
-		});
+			//now we have the feedstorage setup, we can process the items
+
+			//find the set of rules that match the incoming data set setid
+
+			var ruleset = this.consumerstorage[moduleinstance].config.setrules.find(item => {
+				return item.setid == setid;
+			})
+
+			if (ruleset == null) { console.error("no valid rule set found in config"); return; }	
+			if (ruleset.filter == null) { console.error("no valid rule set found in config"); return; }	
+			if (ruleset.reformat == null) { console.error("no valid rule set found in config"); return; }	
+			if (ruleset.grouping == null) { console.error("no valid rule set found in config"); return; }	
+
+			var filterrules = ruleset.filter;
+			var reformatrules = ruleset.reformat;
+			var groupingrules = ruleset.grouping;
+
+			payload.payload[didx].itemarray.forEach(function (item) {
+
+				// -------------------------filter stage -----------------------------------------------
+
+				//check to see if we want to drop/keep this item because of a filter rule match
+
+				var keepitem = true;
+				var newitem = new structures.NDTFItem();
+
+				// look to see if the subject matches the list of subjects required
+
+				if (filterrules.keepsubjects != null) {
+					if (filterrules.keepsubjects.indexOf(item.subject) == -1) { keepitem = false; }
+				}
+
+				// remove any items older than the min date
+
+				if (filterrules.timestamp_min != null) {
+
+					if (moment(item.timestamp) < moment(filterrules.timestamp_min)) {
+						keepitem = false;
+					}
+				}
+
+				//remove any items with a value less than this value
+
+				if (filterrules.dropvalues != null) {
+					if (!isNaN(parseFloat(item.value))) {
+						if (filterrules.dropvalues > parseFloat(item.value)) { keepitem = false; }
+					}
+				}
+
+				if (keepitem) {
+
+					//start storing and building the output as we are keeping this item
+
+					newitem.subject = item.subject; newitem['subjectname']= 'subject';
+					newitem.object = item.object; newitem['objectname']= 'object';
+					newitem.value = item.value; newitem['valuename'] = 'value';
+					newitem.timestamp = item.timestamp; newitem["timestampname"] = 'timestamp'; newitem["timestampformatted"] = item.timestamp;
+
+					// ---------------------------- reformat/rename stage ----------------------------------
+
+					//as we will be merging etc after this step then we have to keep the original 
+					//names as well as the new names
+
+					if (reformatrules.subjectAKA != null) { newitem.subjectname = reformatrules.subjectAKA; }
+					if (reformatrules.valueAKA != null) { newitem.valuename = reformatrules.valueAKA; }
+					if (reformatrules.timestampAKA != null) { newitem.timestampname = reformatrules.timestampAKA; }
+					if (reformatrules.objectnameAKA != null) { newitem.objectname = reformatrules.objectnameAKA; }
+
+					if (reformatrules.timestampformat != null) { newitem.timestampformat = moment(item.timestamp).format(reformatrules.timestampformat)}
+
+					if (reformatrules.dropkey != null) { //this should be an array
+						for (var didx = 0; didx < reformatrules.dropkey.length; didx++) {
+
+							delete newitem[reformatrules.dropkey[didx]];
+							delete newitem[reformatrules.dropkey[didx] + "name"];
+							if (reformatrules.dropkey[didx] == "timestamp") { delete newitem[reformatrules.dropkey[didx] + "formatted"]}
+						}
+					}
+
+					self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.push(newitem);
+				}
+
+			});
+
+		}
 
 		// -------------------------------------- aggregator sort stage ------------------------------------------
 
 
 		// -------------------------------------- aggregator merge stage with template  ------------------------------------------
 
+		//we have to group the data together now using the groupby key 
+		//as the grouping 
+
+
+
+
+
+		var chartdata = {}; //ready to go for this particular chart requirement
 
 		// -------------------------------------- aggregator send stage  ------------------------------------------
 
-		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { titles: titles, articles: articles } });
+		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata : chartdata} });
 
 	},
 

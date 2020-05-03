@@ -1,0 +1,27 @@
+{
+  "input": "./coviddeaths.json",
+  "setid": "timestamp",
+  "subjectAKA": "Country",
+  "valueAKA": "Deaths",
+  "dropkey": "object",
+  "keepsubjects": [
+    "Belgium",
+    "Brazil",
+    "Canada",
+    "China",
+    "Ecuador",
+    "France",
+    "Germany",
+    "Iran",
+    "Ireland",
+    "Italy",
+    "Netherlands",
+    "Spain",
+    "United_Kingdom",
+    "United_States_of_America"
+  ],
+  "timestamp_reformat": "YYYY-MM-DD",
+  "timestamp_min": "2020-03-08 00:00:00",
+
+  "filename": "./coviddeaths.groups.json"
+}

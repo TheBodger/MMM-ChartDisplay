@@ -18,9 +18,39 @@ Module.register("MMM-ChartDisplay", {
 	//in config.js
 
 	defaults: {
-
 		text: "... loading",
 		id: "MMCD1", // the unique id of this consumer
+		setrules: [{						//an array of rules to be applied to each incoming set
+			setid: null,							//must match the setids used in the provider so it can tracks the different data
+			filter: {
+
+				"keepsubjects": null,				// an array of subjects only to keep, TODO both accept and reject
+				"timestamp_min": null,				// the minimum item timestamp to keep TODO Range
+				dropvalues: null,					// the minimum value to accept TODO = range
+
+			},
+			reformat: {
+				"dropkey": null,					//array of item fields to drop
+				"subjectAKA": null,					//rename the subject field name
+				"valueAKA": null,					//rename the value field name
+				"objectAKA": null,					//rename the object field name
+				"timestampAKA": null,				//rename the timestamp field name
+				"timestampformat": null,			//display the timestamp in this format (i.e. "YYYY-MM-DD")
+			},
+			grouping: {
+				groupby: null,						//the field name to group the data together 
+													//should use any reformatted name data (i.e. .subject or timestampformatted)
+				action:null,						//the action to apply to any values within the group (sum,avg etc)
+            }
+		}],
+		merge: {
+			//add a template that represents the output format, includes types of enhanced set, set, item, combined subject
+			//field names are standard / not the renamed ones // handle in the code
+			outputsetid: null,						// the field name to be used as the setid, if null uses "1","2","3"
+			//template will take form of "setid".fieldname (i.e. "births".subject )
+													
+
+		},
 	},
 
 	start: function () {
@@ -32,6 +62,12 @@ Module.register("MMM-ChartDisplay", {
 		//Whenever your module need to be updated, call the updateDom(speed) method.
 
 		var self = this;
+
+		this.sendNotificationToNodeHelper("CONFIG", { moduleinstance: this.identifier, config: this.config });
+
+		//now we wait for the providers to start ... providing
+
+		this.sendNotificationToNodeHelper("STATUS", this.identifier);
 
 	},
 
@@ -57,7 +93,9 @@ Module.register("MMM-ChartDisplay", {
 		return [
 		]
 	},
-	
+
+	//TODO Setconfig proper merge!!
+
 	notificationReceived: function (notification, payload, sender) {
 
 		var self = this;
