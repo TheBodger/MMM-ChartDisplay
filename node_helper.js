@@ -197,7 +197,7 @@ module.exports = NodeHelper.create({
 
 		}
 
-		console.error(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items);
+		//console.error(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items);
 
 		// -------------------------------------- aggregator sort stage ------------------------------------------
 
@@ -215,36 +215,135 @@ module.exports = NodeHelper.create({
 			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = [];
 
 			//use linq to get a nice group by set
-			//build the query from the paramters
+			//build the query from the parameters
 
-			// use fourth argument to groupBy (compareSelector)
-			var teams = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+			//// use fourth argument to groupBy (compareSelector)
+			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+			//	.groupBy(
+			//		"$.timestampformat",
+			//		"'{'+$.subjectname+':'+$.subject+','+$.valuename+':'+$.value+'}'",
+			//		function (key, group) { return { s: key, o: group.toJoinedString(',') } },
+			//		function (key) { return key.toString() })
+			//	.toArray();
+
+			////console.info(teams);
+
+			//console.info(groupeddata);
+
+
+			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+			//	.groupBy(
+			//		"$.timestampformat",
+			//		null,
+			//		function (key, group) { return { s: key, o: group.sum("$.value") } },
+			//		function (key) { return key.toString() })
+			//	.toArray();
+
+			//console.info(groupeddata);
+
+			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+			//	.groupBy(
+			//		"{ timestamp : $.timestampformat, subject: $.subject}",
+			//		"{ value: $.value}",
+			//		"{ timestamp : $.timestamp, subject: $.subject, values: $$.toArray() }",
+			//		"String($.timestamp) + $.subject"
+			//	)
+			//	.toArray();
+
+			//groupingrules.groupby
+
+			//1) build the groupby clause
+			//2) build the other data to return
+			//3) build the return format
+			//4) and add a tostring to ensure that the groupby key works correctly
+
+			//TK keySelector(T),
+			//TE elementSelector(T),
+			//TR resultSelector(T, Enumerable),
+			//TC compareSelector(TK) 
+
+			var keySelector = "{key : $." + groupingrules.groupby + "}"
+			var elementSelector = '{';
+
+			//use the first stored item as a list of all the data we need to keep after grouping
+
+			var tempitem = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[0];
+
+			var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to eb matched string
+
+			if (groupingrules.groupby.startsWith("timestamp")) { ignorekeysstarting = "timestamp"}
+
+			for (var key in tempitem) {
+
+				if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) { 
+
+					elementSelector = elementSelector + tempitem[key+"name"] + ": $." + key + ","; 
+				}
+			}
+
+			elementSelector = elementSelector + '}';
+
+			var resultSelector = "{ key : $.key, values : $$.toArray() }"
+			var compareSelector = "String($.key)"
+
+			var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
 				.groupBy(
-					"$.timestampformat",
-					"'{'+$.subjectname+':'+$.subject+','+$.valuename+':'+$.value+'}'",
-					function (key, group) { return { s: key, o: group.toJoinedString(',') } },
-					function (key) { return key.toString() }).toArray();
+					keySelector,
+					elementSelector,
+					resultSelector,
+					compareSelector
+				)
+				.toArray();
 
-			//console.info(teams);
+			//console.info(groupeddata);
 
-			//convert the result to json
+			
+			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+			//	.groupBy(
+			//		"{ timestamp : $.timestampformat}",
+			//		"{ subjectname: $.subject, valuename: $.value}",
+			//		"{ setid : $.timestamp, values: $$.toArray() }",
+			//		"{ timestamp : $.timestamp, values : $$.toArray() }",
+			//		"String($.timestamp)"
+			//	)
+			//	.toArray();
 
-			var t = JSON.stringify("[" + teams["o"] + "]");
-
-			console.info(t);
+			//console.info(groupeddata);
 
 			//post process into the grouped items array
 
+			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = groupeddata;
+
 		}
 		else {
+
 			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items
+
 		}
 
-		// merge step
+		// ----------------------------------- merge step -------------------------------------
 
 
+		//TODO merge disparate data based on a template
+
+		//if grouping by then we need to build a pseudo set:
 
 		var chartdata = {}; //ready to go for this particular chart requirement
+
+		var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
+
+		for (var gidx = 0; gidx < groupdata.length; gidx++) {
+
+			chartdata[groupdata[gidx].key] = [];
+			chartdata[groupdata[gidx].key][0] = '';
+
+			groupdata[gidx].values.forEach(async function (item) {
+				chartdata[groupdata[gidx].key][0] = chartdata[groupdata[gidx].key][0] + JSON.stringify(item) + ","
+			});
+
+			chartdata[groupdata[gidx].key][0] = chartdata[groupdata[gidx].key][0].slice(0, -1)
+
+		}
 
 		// -------------------------------------- aggregator send stage  ------------------------------------------
 

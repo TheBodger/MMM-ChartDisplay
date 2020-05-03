@@ -172,6 +172,8 @@ Module.register("MMM-ChartDisplay", {
 
 		var self = this;
 
+		console.log(JSON.stringify(payload.payload.chartdata));
+
 	},
 
 	// Override dom generator.
