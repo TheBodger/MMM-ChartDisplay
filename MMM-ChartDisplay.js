@@ -86,7 +86,7 @@ Module.register("MMM-ChartDisplay", {
 
 				//send the data to the aggregator
 
-				//this.sendNotificationToNodeHelper("AGGREGATE_THIS", { moduleinstance: self.identifier, payload :payload});
+				this.sendNotificationToNodeHelper("AGGREGATE_THIS", { moduleinstance: self.identifier, payload :payload});
 
 			}
 		}

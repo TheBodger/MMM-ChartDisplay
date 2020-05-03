@@ -11,9 +11,10 @@ the flow can be shown as:
 
 receive data from provider
 pass to aggregator
-	filter out/in specific items of data
-	|rename data entities as required
-	|reformat data entities as required
-	merge together different data within the payload (to be determined the best way to represent multiple sets of data within a payload,)
-	carry out aggregate sorting etc
-	send all aggragted data to the display module
+	-filter out/in specific items of data
+	-|rename data entities as required
+	 |reformat data entities as required
+	 -carry out aggregate sorting etc
+	-|merge together different data within the payload (to be determined the best way to represent multiple sets of data within a payload,)
+	 |use template to merge data, template will refer to reformatted/ renamed items entities
+	-send all aggregated data to the display module

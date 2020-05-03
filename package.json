@@ -1,0 +1,28 @@
+{
+  "name": "MMM-FeedDisplay",
+  "version": "1.0.0",
+  "description": "Magic Mirror Module for displaying feeds provided from other modules in RSS 2.0 format on Magic Mirror 2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheBodger/MMM-FeedDisplay"
+  },
+  "author": {
+    "name": "N Scott"
+  },
+  "keywords": [
+    "magic mirror",
+    "smart mirror",
+    "RSS Feeds",
+    "Atom Feeds",
+    "module"
+  ],
+  "dependencies": {
+    "feedparser": "^2.2.9",
+    "isprofanity": "latest"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheBodger/MMM-FeedDisplay/issues"
+  },
+  "homepage": "https://github.com/TheBodger/MMM-FeedDisplay#readme"
+}
