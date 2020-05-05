@@ -18,3 +18,20 @@ pass to aggregator
 	-|merge together different data within the payload (to be determined the best way to represent multiple sets of data within a payload,)
 	 |use template to merge data, template will refer to reformatted/ renamed items entities
 	-send all aggregated data to the display module
+
+	dependencies
+
+	must be installed in MMM-ChartDisplay/amcharts4
+
+		download and extract the amcharts v4 standalone javascript files (core, fonts and geodata into this and sub directories:
+
+		/MagicMirror/modules/MMM-ChartDisplay/amcharts4
+		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/fonts
+		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/geodata
+
+
+	must be run inside the vendor directory /MagicMirror/Vendor to ensure the client side usage will work
+
+		npm install requirejs
+
+		

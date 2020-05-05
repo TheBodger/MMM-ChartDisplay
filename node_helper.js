@@ -197,8 +197,6 @@ module.exports = NodeHelper.create({
 
 		}
 
-		//console.error(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items);
-
 		// -------------------------------------- aggregator sort stage ------------------------------------------
 
 
@@ -269,7 +267,7 @@ module.exports = NodeHelper.create({
 
 			var tempitem = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[0];
 
-			var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to eb matched string
+			var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to be matched string
 
 			if (groupingrules.groupby.startsWith("timestamp")) { ignorekeysstarting = "timestamp"}
 
@@ -337,11 +335,11 @@ module.exports = NodeHelper.create({
 			chartdata[groupdata[gidx].key] = [];
 			chartdata[groupdata[gidx].key][0] = '';
 
-			groupdata[gidx].values.forEach(async function (item) {
-				chartdata[groupdata[gidx].key][0] = chartdata[groupdata[gidx].key][0] + JSON.stringify(item) + ","
+			var aidx = 0;
+			groupdata[gidx].values.forEach(function (item) {
+				chartdata[groupdata[gidx].key][aidx] = item;
+				aidx++;
 			});
-
-			chartdata[groupdata[gidx].key][0] = chartdata[groupdata[gidx].key][0].slice(0, -1)
 
 		}
 
