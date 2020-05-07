@@ -21,7 +21,18 @@ pass to aggregator
 
 	dependencies
 
-	must be installed in MMM-ChartDisplay/amcharts4
+	The us of AMCHARTS is restricted by license:
+
+	### License
+		If you don't have a commercial license, the use of this software is covered by
+		a freeware license. Refer to included LICENSE file. The license is also
+		[available online](https://github.com/amcharts/amcharts4/blob/master/dist/script/LICENSE).
+
+	Download the standalone javscript version here: https://www.amcharts.com/download/
+
+	Don't use NPM installation as this doesn't work with this MMM module
+
+	It must be installed in MMM-ChartDisplay/amcharts4
 
 		download and extract the amcharts v4 standalone javascript files (core, fonts and geodata into this and sub directories:
 
@@ -30,7 +41,9 @@ pass to aggregator
 		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/geodata
 
 
-	must be run inside the vendor directory /MagicMirror/Vendor to ensure the client side usage will work
+	To enable AMCHARTS to work within the client side module, requirejs is required.
+
+	run inside the /MagicMirror/vendor directory to ensure the client side usage will work
 
 		npm install requirejs
 

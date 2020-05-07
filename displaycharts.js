@@ -1,9 +1,284 @@
 //contains all the prewritten code to display the charts
-//each chart is standalone, and will have data provided to it through the variable this.chartdata.
+//each chart is standalone, and will have data provided to it through the variable chartdata.
+//chartdata will normally take the form of {setname:[{setdata}],setname:[{setdata}]}} where setdata is a pair of timestamp/value or whatever pair is required for the chart
+//some charts require more than 1 datavalue in the setdata and this will be provided through merging i.e. {setname:[{setdata}]} where setdata is 1 date value and multiple data values
+//example {'tjx':[{date:blah,open:99,close:89,high:120,low:89}]} - it is up to the user to determine what set of data should be passed to each chart type
+//by default each setname is allocated to a chart series along with its array of setdata.
+//the chart is displayed within the divid passed to the routine
+//todo - add datainvalidate option so the main module can request an update fo the chart based on a data change
 //copied from the examples in amcharts4/examples/javascript
+//note some of these charts are very resource intensive and may not render on a raspberry pi at all.
 
+/*
+ * ---------------------------------------
+ * These demos were created using amCharts 4.
+ *
+ * For more information visit:
+ * https://www.amcharts.com/
+ *
+ * Documentation is available at:
+ * https://www.amcharts.com/docs/v4/
+ * ---------------------------------------
+ */
 
 displaycharts = {
+
+    tag_cloud: function (chartdata, divid) {
+
+        //edit this to change the URL and relevant text to match the actual site you want to click through to (i.e. twitter search)
+
+        require([
+            'amcharts4/core',
+            'amcharts4/charts',
+            'amcharts4/themes/animated',
+            'amcharts4/plugins/wordCloud'
+        ], function (am4core, am4charts, am4themes_animated, am4plugins_wordCloud) {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            // Themes end
+
+            var chart = am4core.create(divid, am4plugins_wordCloud.WordCloud);
+            chart.fontFamily = "Courier New";
+            var series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
+            series.randomness = 0.1;
+            series.rotationThreshold = 0.5;
+
+                series.data = [
+                    {
+                    "tag": "javascript",
+                    "count": "1765836"
+                    },
+                    {
+                    "tag": "java",
+                    "count": "1517355"
+                    }
+                ]
+
+            series.dataFields.word = "tag";
+            series.dataFields.value = "count";
+
+            series.heatRules.push({
+                "target": series.labels.template,
+                "property": "fill",
+                "min": am4core.color("#0000CC"),
+                "max": am4core.color("#CC00CC"),
+                "dataField": "value"
+            });
+
+            series.labels.template.url = "https://stackoverflow.com/questions/tagged/{word}";
+            series.labels.template.urlTarget = "_blank";
+            series.labels.template.tooltipText = "{word}: {value}";
+
+            var hoverState = series.labels.template.states.create("hover");
+            hoverState.properties.fill = am4core.color("#FF0000");
+
+            var subtitle = chart.titles.create();
+            subtitle.text = "(click to open)";
+
+            var title = chart.titles.create();
+            title.text = "Most Popular Tags @ StackOverflow";
+            title.fontSize = 20;
+            title.fontWeight = "800";
+
+        })
+    },
+    rotating_globe: function (chartdata, divid) {
+
+        require([
+            'amcharts4/core',
+            'amcharts4/themes/animated',
+            'amcharts4/maps',
+            'amcharts4/geodata/worldLow'
+        ], function (am4core, am4themes_animated, am4maps, am4geodata_worldLow) {
+
+                am4core.useTheme(am4themes_animated);
+
+                // Create chart instance
+                var chart = am4core.create(divid, am4maps.MapChart);
+                var interfaceColors = new am4core.InterfaceColorSet();
+
+                // Chech if proper geodata is loaded
+                try {
+                    chart.geodata = am4geodata_worldLow;
+                }
+                catch (e) {
+                    chart.raiseCriticalError(new Error("Map geodata could not be loaded. Please download the latest <a href=\"https://www.amcharts.com/download/download-v4/\">amcharts geodata</a> and extract its contents into the same directory as your amCharts files."));
+                }
+
+                var label = chart.createChild(am4core.Label)
+                label.text = "Reported Covid19 Deaths\nper 1'000'000 total population. \n Bullet size uses logarithmic scale. \n Data: World Health Organization";
+                label.fontSize = 12;
+                label.align = "left";
+                label.valign = "bottom"
+                label.fill = am4core.color("#927459");
+                label.background = new am4core.RoundedRectangle()
+                label.background.cornerRadius(10, 10, 10, 10);
+                label.padding(10, 10, 10, 10);
+                label.marginLeft = 30;
+                label.marginBottom = 30;
+                label.background.strokeOpacity = 0.3;
+                label.background.stroke = am4core.color("#927459");
+                label.background.fill = am4core.color("#f9e3ce");
+                label.background.fillOpacity = 0.6;
+
+                // Set projection
+                chart.projection = new am4maps.projections.Orthographic();
+                chart.panBehavior = "rotateLongLat";
+                chart.padding(10, 10, 10, 10);
+
+                // Add zoom control
+                chart.zoomControl = new am4maps.ZoomControl();
+                chart.seriesContainer.cursorOverStyle = am4core.MouseCursorStyle.grab;
+                chart.seriesContainer.cursorDownStyle = am4core.MouseCursorStyle.grabbing;
+
+                var homeButton = new am4core.Button();
+                homeButton.events.on("hit", function () {
+                    chart.goHome();
+                });
+
+                homeButton.icon = new am4core.Sprite();
+                homeButton.padding(7, 5, 7, 5);
+                homeButton.width = 30;
+                homeButton.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
+                homeButton.marginBottom = 10;
+                homeButton.parent = chart.zoomControl;
+                homeButton.insertBefore(chart.zoomControl.plusButton);
+
+                chart.backgroundSeries.mapPolygons.template.polygon.fill = am4core.color("#bfa58d");
+                chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
+
+
+                //// Create map polygon series
+
+                //var shadowPolygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+                //shadowPolygonSeries.geodata = am4geodata_continentsLow;
+
+                //try {
+                //    shadowPolygonSeries.geodata = am4geodata_continentsLow;
+                //}
+                //catch (e) {
+                //    shadowPolygonSeries.raiseCriticalError(new Error("Map geodata could not be loaded. Please download the latest <a href=\"https://www.amcharts.com/download/download-v4/\">amcharts geodata</a> and extract its contents into the same directory as your amCharts files."));
+                //}
+
+                //shadowPolygonSeries.useGeodata = true;
+                //shadowPolygonSeries.dx = 2;
+                //shadowPolygonSeries.dy = 2;
+                //shadowPolygonSeries.mapPolygons.template.fill = am4core.color("#000");
+                //shadowPolygonSeries.mapPolygons.template.fillOpacity = 0.2;
+                //shadowPolygonSeries.mapPolygons.template.strokeOpacity = 0;
+                //shadowPolygonSeries.fillOpacity = 0.1;
+                //shadowPolygonSeries.fill = am4core.color("#000");
+
+
+                // Create map polygon series
+                var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+                polygonSeries.useGeodata = true;
+
+                polygonSeries.calculateVisualCenter = true;
+                polygonSeries.tooltip.background.fillOpacity = 0.2;
+                polygonSeries.tooltip.background.cornerRadius = 20;
+
+                var template = polygonSeries.mapPolygons.template;
+                template.nonScalingStroke = true;
+                template.fill = am4core.color("#f9e3ce");
+                template.stroke = am4core.color("#e2c9b0");
+
+                polygonSeries.calculateVisualCenter = true;
+                template.propertyFields.id = "id";
+                template.tooltipPosition = "fixed";
+                template.fillOpacity = 1;
+
+                template.events.on("over", function (event) {
+                    if (event.target.dummyData) {
+                        event.target.dummyData.isHover = true;
+                    }
+                })
+                template.events.on("out", function (event) {
+                    if (event.target.dummyData) {
+                        event.target.dummyData.isHover = false;
+                    }
+                })
+
+                var hs = polygonSeries.mapPolygons.template.states.create("hover");
+                hs.properties.fillOpacity = 1;
+                hs.properties.fill = am4core.color("#deb7ad");
+
+
+                var graticuleSeries = chart.series.push(new am4maps.GraticuleSeries());
+                graticuleSeries.mapLines.template.stroke = am4core.color("#fff");
+                graticuleSeries.fitExtent = false;
+                graticuleSeries.mapLines.template.strokeOpacity = 0.2;
+                graticuleSeries.mapLines.template.stroke = am4core.color("#fff");
+
+
+                var measelsSeries = chart.series.push(new am4maps.MapPolygonSeries())
+                measelsSeries.tooltip.background.fillOpacity = 0;
+                measelsSeries.tooltip.background.cornerRadius = 20;
+                measelsSeries.tooltip.autoTextColor = false;
+                measelsSeries.tooltip.label.fill = am4core.color("#000");
+                measelsSeries.tooltip.dy = -5;
+
+                var measelTemplate = measelsSeries.mapPolygons.template;
+                measelTemplate.fill = am4core.color("#bf7569");
+                measelTemplate.strokeOpacity = 0;
+                measelTemplate.fillOpacity = 0.75;
+                measelTemplate.tooltipPosition = "fixed";
+
+                var hs2 = measelsSeries.mapPolygons.template.states.create("hover");
+                hs2.properties.fillOpacity = 1;
+                hs2.properties.fill = am4core.color("#86240c");
+
+                polygonSeries.events.on("inited", function () {
+                    polygonSeries.mapPolygons.each(function (mapPolygon) {
+                        console.log(mapPolygon.id);
+                        
+                        if (data[mapPolygon.id]!=null) {
+                            var count = data[mapPolygon.id][0].count;
+                            if (count > 0) {
+                                var polygon = measelsSeries.mapPolygons.create();
+                                polygon.multiPolygon = am4maps.getCircle(mapPolygon.visualLongitude, mapPolygon.visualLatitude, Math.max(0.2, Math.log(count) * Math.LN10 / 10));
+                                polygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": " + count;
+                                mapPolygon.dummyData = polygon;
+                                polygon.events.on("over", function () {
+                                    mapPolygon.isHover = true;
+                                })
+                                polygon.events.on("out", function () {
+                                    mapPolygon.isHover = false;
+                                })
+                            }
+                            else {
+                                mapPolygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": no data";
+                                mapPolygon.fillOpacity = 0.9;
+                            }
+                        }
+                        else {
+                            mapPolygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": no data";
+                            mapPolygon.fillOpacity = 0.9;
+                        }
+
+                    })
+                })
+
+                var data = chartdata;
+
+                    //{ "AD": 519.44 };
+
+            let animation;
+            setTimeout(function () {
+                animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
+            }, 3000)
+
+            //uncomment to reanble a click to stop option
+
+            //chart.seriesContainer.events.on("down", function () {
+            //    if (animation) {
+            //        animation.stop();
+            //    }
+            //})
+
+        })
+    },
 
     bar_chart_race: function (chartdata, divid) {
 

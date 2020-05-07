@@ -49,6 +49,13 @@
                     init: function () {
                         return window.am4themes_microchart;
                     }
+                },
+                'amcharts4/plugins/wordCloud': {
+                    deps: ['amcharts4/core'],
+                    exports: 'amcharts4/plugins/wordCloud',
+                    init: function () {
+                        return window.am4plugins_wordCloud;
+                    }
                 }
             }
         });

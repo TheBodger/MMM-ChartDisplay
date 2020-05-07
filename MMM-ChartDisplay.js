@@ -7,6 +7,15 @@
  * MIT Licensed.
  */
 
+//todo merge multiple feeds based on keys (i.e. a linq join - omg - data will be provided from a data provider picking up a locaol data fgeed)
+//	#1 change the WHO coes from UK to GB etc
+//  #2 add additional values into a set (i.e. setid:[{v1:1,v2:2v3:34,timestamp:blah}])
+//
+//todo add group by type (sum,avg etc)
+//todo add calculation in join (i.e. sum deaths / population)
+//todo always group and sum word input {setid:1,set:[{subject:uk,value:23},{subject:uk,value:233}]} merge and sum on uk
+//	mist be merged on the key value before
+
 var startTime = new Date(); //use for getting elapsed times during debugging
 
 var feedDisplayPayload = { consumerid: '', providerid: '', payload: '' };
