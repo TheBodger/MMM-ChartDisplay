@@ -42,6 +42,13 @@
                     init: function () {
                         return window.am4themes_animated;
                     }
+                },
+                'amcharts4/themes/microchart': {
+                    deps: ['amcharts4/core'],
+                    exports: 'amcharts4/themes/microchart',
+                    init: function () {
+                        return window.am4themes_microchart;
+                    }
                 }
             }
         });

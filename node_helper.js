@@ -76,10 +76,11 @@ module.exports = NodeHelper.create({
 		//we support multiple sets of data in the feedsets area
 		//assumption is that the provider will NOT send duplicate feeds so we just add them to the end
 
-		var feedsets = {'': { items: [] } };
+		var feedsets = { '': { items: [] } };
 
 		var feedstorage = {
-			key: '', sortidx: -1, titles: [], sourcetitles: [], providers: [], sortkeys: [], feedsets: {} };
+			key: '', sortidx: -1, titles: [], sourcetitles: [], providers: [], sortkeys: [], feedsets: {}
+		};
 
 		//we will need to store all the separate sets of data provided here/ TBD
 
@@ -101,13 +102,13 @@ module.exports = NodeHelper.create({
 
 		//loop on sets first TBD
 
-		for (var didx = 0; didx < payload.payload.length;didx++) {
+		for (var didx = 0; didx < payload.payload.length; didx++) {
 
-			var setid = payload.payload[didx].setid; 
+			var setid = payload.payload[didx].setid;
 
 			if (this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] == null) {
 
-				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { items: [],groupeditems:[] };
+				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { items: [], groupeditems: [] };
 
 			}
 
@@ -119,10 +120,10 @@ module.exports = NodeHelper.create({
 				return item.setid == setid;
 			})
 
-			if (ruleset == null) { console.error("no valid rule set found in config"); return; }	
-			if (ruleset.filter == null) { console.error("no valid rule set found in config"); return; }	
-			if (ruleset.reformat == null) { console.error("no valid rule set found in config"); return; }	
-			if (ruleset.grouping == null) { console.error("no valid rule set found in config"); return; }	
+			if (ruleset == null) { console.error("no valid rule set found in config"); return; }
+			if (ruleset.filter == null) { console.error("no valid rule set found in config"); return; }
+			if (ruleset.reformat == null) { console.error("no valid rule set found in config"); return; }
+			if (ruleset.grouping == null) { console.error("no valid rule set found in config"); return; }
 
 			var filterrules = ruleset.filter;
 			var reformatrules = ruleset.reformat;
@@ -164,8 +165,8 @@ module.exports = NodeHelper.create({
 
 					//start storing and building the output as we are keeping this item
 
-					newitem.subject = item.subject; newitem['subjectname']= 'subject';
-					newitem.object = item.object; newitem['objectname']= 'object';
+					newitem.subject = item.subject; newitem['subjectname'] = 'subject';
+					newitem.object = item.object; newitem['objectname'] = 'object';
 					newitem.value = item.value; newitem['valuename'] = 'value';
 					newitem.timestamp = item.timestamp; newitem["timestampname"] = 'timestamp'; newitem["timestampformatted"] = item.timestamp;
 
@@ -179,18 +180,24 @@ module.exports = NodeHelper.create({
 					if (reformatrules.timestampAKA != null) { newitem.timestampname = reformatrules.timestampAKA; }
 					if (reformatrules.objectnameAKA != null) { newitem.objectname = reformatrules.objectnameAKA; }
 
-					if (reformatrules.timestampformat != null) { newitem.timestampformat = moment(item.timestamp).format(reformatrules.timestampformat)}
+					if (reformatrules.timestampformat != null) {
+						newitem.timestampformat = moment(item.timestamp).format(reformatrules.timestampformat)
+						if (reformatrules.timestampformat.toLowerCase() == "x") { newitem.timestampformat = parseInt(newitem.timestampformat) ;}
+					}
 
 					if (reformatrules.dropkey != null) { //this should be an array
 						for (var didx = 0; didx < reformatrules.dropkey.length; didx++) {
 
 							delete newitem[reformatrules.dropkey[didx]];
 							delete newitem[reformatrules.dropkey[didx] + "name"];
-							if (reformatrules.dropkey[didx] == "timestamp") { delete newitem[reformatrules.dropkey[didx] + "formatted"]}
+							if (reformatrules.dropkey[didx] == "timestamp") { delete newitem[reformatrules.dropkey[didx] + "formatted"] }
 						}
 					}
 
 					self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.push(newitem);
+
+					//console.info(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.length);
+
 				}
 
 			});
@@ -198,6 +205,21 @@ module.exports = NodeHelper.create({
 		}
 
 		// -------------------------------------- aggregator sort stage ------------------------------------------
+
+		// ---------------------------------------- process delta stage -----------------------------------------
+
+		//delta recalculates the stored data and has to be done here before we loose the default names
+
+		if (groupingrules.delta != null) {
+
+			for (indx = 0; indx < self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.length;indx++) {
+
+				if (groupby.delta == 'fred'){}
+
+            }
+			
+		}
+
 
 
 		// -------------------------------------- aggregator merge stage with template  ------------------------------------------
@@ -260,6 +282,8 @@ module.exports = NodeHelper.create({
 			//TR resultSelector(T, Enumerable),
 			//TC compareSelector(TK) 
 
+			//the following groupby also renames the fields so at the end of the group by everything is okdokey
+
 			var keySelector = "{key : $." + groupingrules.groupby + "}"
 			var elementSelector = '{';
 
@@ -269,13 +293,18 @@ module.exports = NodeHelper.create({
 
 			var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to be matched string
 
-			if (groupingrules.groupby.startsWith("timestamp")) { ignorekeysstarting = "timestamp"}
+			if (groupingrules.groupby.startsWith("timestamp")) { ignorekeysstarting = "timestamp" }
 
 			for (var key in tempitem) {
 
-				if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) { 
+				if (reformatrules.timestampformat != null && key == "timestamp") {
+						elementSelector = elementSelector + tempitem[key + "name"] + ": $." + 'timestampformat' + ",";
+					}
+				else {
+					if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) {
 
-					elementSelector = elementSelector + tempitem[key+"name"] + ": $." + key + ","; 
+						elementSelector = elementSelector + tempitem[key + "name"] + ": $." + key + ",";
+					}
 				}
 			}
 
@@ -295,7 +324,6 @@ module.exports = NodeHelper.create({
 
 			//console.info(groupeddata);
 
-			
 			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
 			//	.groupBy(
 			//		"{ timestamp : $.timestampformat}",
@@ -312,38 +340,66 @@ module.exports = NodeHelper.create({
 
 			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = groupeddata;
 
+			//console.info(groupeddata);
+
 		}
 		else {
 
-			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items
+			//we have to complete the rename and drop unwanted stuff here 
 
-		}
+			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.forEach(function (item) {
 
-		// ----------------------------------- merge step -------------------------------------
+				var tempitem = {};
 
+				for (var key in item) {
+					if (item[key + "name"] != null) {
+						if (reformatrules.timestampformat != null && key == "timestamp") {
+							tempitem[item[key + "name"]] = item['timestampformat'];
+						}
+					else{
+						tempitem[item[key + "name"]] = item[key];
+						}
+					}
+				}
 
-		//TODO merge disparate data based on a template
-
-		//if grouping by then we need to build a pseudo set:
-
-		var chartdata = {}; //ready to go for this particular chart requirement
-
-		var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
-
-		for (var gidx = 0; gidx < groupdata.length; gidx++) {
-
-			chartdata[groupdata[gidx].key] = [];
-			chartdata[groupdata[gidx].key][0] = '';
-
-			var aidx = 0;
-			groupdata[gidx].values.forEach(function (item) {
-				chartdata[groupdata[gidx].key][aidx] = item;
-				aidx++;
+				self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems.push(tempitem);
 			});
 
 		}
 
+		// ----------------------------------- merge step -------------------------------------
+		//TODO merge disparate data based on a template //may need to NOT lose the names until here so we can merge correctly
+		// ------------------------------------------------------------------------------------
+
+		var chartdata = {}; //ready to go for this particular chart requirement
+		var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
+
+		if (groupingrules.groupby != null) {
+
+			//if grouping by then we need to build a pseudo set:
+			
+			for (var gidx = 0; gidx < groupdata.length; gidx++) {
+
+				chartdata[groupdata[gidx].key] = [];
+				chartdata[groupdata[gidx].key][0] = '';
+
+				var aidx = 0;
+				groupdata[gidx].values.forEach(function (item) {
+					chartdata[groupdata[gidx].key][aidx] = item;
+					aidx++;
+				});
+			}
+		}
+		else {  // no grouping end up with simple array of items within a setid with a stock name as part of an array of stocks
+
+			chartdata[setid] = {items: groupdata};
+
+        }
+
+
 		// -------------------------------------- aggregator send stage  ------------------------------------------
+
+		//console.info(JSON.stringify(chartdata));
 
 		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata : chartdata} });
 
