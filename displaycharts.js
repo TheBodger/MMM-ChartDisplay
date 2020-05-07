@@ -44,16 +44,23 @@ displaycharts = {
             series.randomness = 0.1;
             series.rotationThreshold = 0.5;
 
-                series.data = [
-                    {
-                    "tag": "javascript",
-                    "count": "1765836"
-                    },
-                    {
-                    "tag": "java",
-                    "count": "1517355"
-                    }
-                ]
+            //chartdata {setid:[{},{}],setid{[{},{},{},{}]}}
+            //chartdata {word:[{count:n}],word{[{count:n}]}}
+
+            series.data = [
+                {
+                "tag": "javascript",
+                "count": "1765836"
+                },
+                {
+                "tag": "java",
+                "count": "1517355"
+                }
+            ]
+
+            series.data = [];
+
+            for (var key in chartdata) { series.data.push({ tag: key, count: chartdata[key][0].count }) ;}
 
             series.dataFields.word = "tag";
             series.dataFields.value = "count";

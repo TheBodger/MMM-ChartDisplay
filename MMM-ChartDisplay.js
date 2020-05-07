@@ -32,18 +32,18 @@ Module.register("MMM-ChartDisplay", {
 		setrules: [{						        //an array of rules to be applied to each incoming set
 			setid: null,							//must match the setids used in the provider so it can tracks the different data
 			filter: {
-				"keepsubjects": null,				// an array of subjects only to keep, TODO both accept and reject
-				"timestamp_min": null,				// the minimum item timestamp to keep TODO Range
+				keepsubjects: null,				// an array of subjects only to keep, TODO both accept and reject
+				timestamp_min: null,				// the minimum item timestamp to keep TODO Range
 				dropvalues: null,					// the minimum value to accept TODO = range
 
 			},
 			reformat: {
-				"dropkey": null,					//array of item fields to drop
-				"subjectAKA": null,					//rename the subject field name
-				"valueAKA": null,					//rename the value field name
-				"objectAKA": null,					//rename the object field name
-				"timestampAKA": null,				//rename the timestamp field name
-				"timestampformat": null,			//display the timestamp in this format (i.e. "YYYY-MM-DD") Supports all moment formats including x and X for unix timestamps//null leave as it comes
+				dropkey: null,					//array of item fields to drop
+				subjectAKA: null,					//rename the subject field name
+				valueAKA: null,					//rename the value field name
+				objectAKA: null,					//rename the object field name
+				timestampAKA: null,				//rename the timestamp field name
+				timestampformat: null,			//display the timestamp in this format (i.e. "YYYY-MM-DD") Supports all moment formats including x and X for unix timestamps//null leave as it comes
 			},
 			grouping: {
 				groupby: null,						//the field name to group the data together 
