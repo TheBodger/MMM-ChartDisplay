@@ -65,16 +65,13 @@ module.exports = NodeHelper.create({
 
 		//depending on the config options for this moduleinstance
 
-		//if we are keeping the feeds separate, then we will have to use the provided feed title as a key into the feedstorage
-		//otherwise we will use a key of "merged feed"
-
 		//determine what the feedstorekey is
 
 		var feedstorekey = payload.providerid;
 
 		//now we add the provided feeds to the feedstorage
 		//we support multiple sets of data in the feedsets area
-		//assumption is that the provider will NOT send duplicate feeds so we just add them to the end
+		//assumption is that the provider will NOT send duplicate feeds so we just update them if already stored
 
 		var feedsets = { '': { items: [] } };
 
@@ -121,13 +118,15 @@ module.exports = NodeHelper.create({
 			})
 
 			if (ruleset == null) { console.error("no valid rule set found in config"); return; }
-			if (ruleset.filter == null) { console.error("no valid rule set found in config"); return; }
-			if (ruleset.reformat == null) { console.error("no valid rule set found in config"); return; }
-			if (ruleset.grouping == null) { console.error("no valid rule set found in config"); return; }
+			if (ruleset.filter == null) { console.error("no valid rule set found in config: filters"); return; }
+			if (ruleset.reformat == null) { console.error("no valid rule set found in config : reformat"); return; }
+			if (ruleset.grouping == null) { console.error("no valid rule set found in config : grouping"); return; }
 
 			var filterrules = ruleset.filter;
 			var reformatrules = ruleset.reformat;
 			var groupingrules = ruleset.grouping;
+
+			filterrules['filtervaluename'] = '';
 
 			payload.payload[didx].itemarray.forEach(function (item) {
 
@@ -153,9 +152,11 @@ module.exports = NodeHelper.create({
 					}
 				}
 
-				//remove any items with a value less than this value
+				//remove any items with a value less than this value 
+				//this is only applied here if there is no group by rules
+				//if there are group by rules then this applied as part of the group stage
 
-				if (filterrules.dropvalues != null) {
+				if (filterrules.dropvalues != null && groupingrules.groupby == null) {
 					if (!isNaN(parseFloat(item.value))) {
 						if (filterrules.dropvalues > parseFloat(item.value)) { keepitem = false; }
 					}
@@ -176,7 +177,7 @@ module.exports = NodeHelper.create({
 					//names as well as the new names
 
 					if (reformatrules.subjectAKA != null) { newitem.subjectname = reformatrules.subjectAKA; }
-					if (reformatrules.valueAKA != null) { newitem.valuename = reformatrules.valueAKA; }
+					if (reformatrules.valueAKA != null) { newitem.valuename = reformatrules.valueAKA; filterrules.filtervaluename = newitem.valuename; }
 					if (reformatrules.timestampAKA != null) { newitem.timestampname = reformatrules.timestampAKA; }
 					if (reformatrules.objectnameAKA != null) { newitem.objectname = reformatrules.objectnameAKA; }
 
@@ -196,30 +197,25 @@ module.exports = NodeHelper.create({
 
 					self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.push(newitem);
 
-					//console.info(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.length);
-
 				}
 
 			});
 
 		}
 
-		// -------------------------------------- aggregator sort stage ------------------------------------------
+		// -------------------------------------- aggregator reference stage ------------------------------------------
 
-		// ---------------------------------------- process delta stage -----------------------------------------
+		//if a reference set is provided for any of the items (subject,object,value etc)
+		//this is where we replace the incoming value with the reference value
 
-		//delta recalculates the stored data and has to be done here before we loose the default names
+		//any mismatching items will be dropped
+		//any matching item's values will be replaced and the original information dropped
 
-		if (groupingrules.delta != null) {
+		//this can also be used to filter out items when they have a subject we are not interesedted in / or interested in
 
-			for (indx = 0; indx < self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.length;indx++) {
+		//if mismatched console.info dropped item: because a mismatch occured on field: value:
 
-				if (groupby.delta == 'fred'){}
-
-            }
-			
-		}
-
+		//TODO use self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items
 
 
 		// -------------------------------------- aggregator merge stage with template  ------------------------------------------
@@ -234,53 +230,7 @@ module.exports = NodeHelper.create({
 
 			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = [];
 
-			//use linq to get a nice group by set
-			//build the query from the parameters
-
-			//// use fourth argument to groupBy (compareSelector)
-			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
-			//	.groupBy(
-			//		"$.timestampformat",
-			//		"'{'+$.subjectname+':'+$.subject+','+$.valuename+':'+$.value+'}'",
-			//		function (key, group) { return { s: key, o: group.toJoinedString(',') } },
-			//		function (key) { return key.toString() })
-			//	.toArray();
-
-			////console.info(teams);
-
-			//console.info(groupeddata);
-
-
-			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
-			//	.groupBy(
-			//		"$.timestampformat",
-			//		null,
-			//		function (key, group) { return { s: key, o: group.sum("$.value") } },
-			//		function (key) { return key.toString() })
-			//	.toArray();
-
-			//console.info(groupeddata);
-
-			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
-			//	.groupBy(
-			//		"{ timestamp : $.timestampformat, subject: $.subject}",
-			//		"{ value: $.value}",
-			//		"{ timestamp : $.timestamp, subject: $.subject, values: $$.toArray() }",
-			//		"String($.timestamp) + $.subject"
-			//	)
-			//	.toArray();
-
-			//groupingrules.groupby
-
-			//1) build the groupby clause
-			//2) build the other data to return
-			//3) build the return format
-			//4) and add a tostring to ensure that the groupby key works correctly
-
-			//TK keySelector(T),
-			//TE elementSelector(T),
-			//TR resultSelector(T, Enumerable),
-			//TC compareSelector(TK) 
+			// see the file usingLinq.md
 
 			//the following groupby also renames the fields so at the end of the group by everything is okdokey
 
@@ -297,15 +247,16 @@ module.exports = NodeHelper.create({
 
 			for (var key in tempitem) {
 
-				if (reformatrules.timestampformat != null && key == "timestamp") {
+				if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) {
+
+					if (reformatrules.timestampformat != null && key == "timestamp") {
 						elementSelector = elementSelector + tempitem[key + "name"] + ": $." + 'timestampformat' + ",";
 					}
-				else {
-					if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) {
-
+					else {
 						elementSelector = elementSelector + tempitem[key + "name"] + ": $." + key + ",";
 					}
 				}
+				
 			}
 
 			elementSelector = elementSelector + '}';
@@ -313,34 +264,41 @@ module.exports = NodeHelper.create({
 			var resultSelector = "{ key : $.key, values : $$.toArray() }"
 			var compareSelector = "String($.key)"
 
-			var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
-				.groupBy(
-					keySelector,
-					elementSelector,
-					resultSelector,
-					compareSelector
-				)
-				.toArray();
+			if (groupingrules.aggregate == null) {
 
-			//console.info(groupeddata);
+				var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+					.groupBy(
+						keySelector,
+						elementSelector,
+						resultSelector,
+						compareSelector
+					)
+					.toArray();
+			}
 
-			//var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
-			//	.groupBy(
-			//		"{ timestamp : $.timestampformat}",
-			//		"{ subjectname: $.subject, valuename: $.value}",
-			//		"{ setid : $.timestamp, values: $$.toArray() }",
-			//		"{ timestamp : $.timestamp, values : $$.toArray() }",
-			//		"String($.timestamp)"
-			//	)
-			//	.toArray();
+			else {
 
-			//console.info(groupeddata);
+				//use the defined valuename in the selection, as we can only aggregate on the value (even though a timestamp can be also aggregated)
+				//if there is need to aggregate a timestamp then the value must equal the timestamp
+
+				var resultSelector = "{ key : $.key, " + tempitem["valuename"] + " : $$." + groupingrules.aggregate + "('$.value') }"
+
+				var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+					.groupBy(
+						keySelector,
+						null,
+						resultSelector,
+						compareSelector
+					)
+					.toArray();
+			}
+
+			//// we now have all the data with the correct names, so we have to reverse back into the data
+			//// to apply the drop values rules if it exists
 
 			//post process into the grouped items array
 
 			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = groupeddata;
-
-			//console.info(groupeddata);
 
 		}
 		else {
@@ -376,30 +334,71 @@ module.exports = NodeHelper.create({
 
 		if (groupingrules.groupby != null) {
 
-			//if grouping by then we need to build a pseudo set:
-			
-			for (var gidx = 0; gidx < groupdata.length; gidx++) {
+			//if grouping by, we need to build a pseudo set: from multiple values in an array
 
-				chartdata[groupdata[gidx].key] = [];
-				chartdata[groupdata[gidx].key][0] = '';
+			//for time being we drop any items in the array not matching the value filter rule
+			//if all values are dropped from an item, then that item is dropped
+			//be aware that some charts expect to see all possible values in each set, so this may negatively impact the chart appearance
+			//be aware that the chartdata could be empty at the end of this!!
 
-				var aidx = 0;
-				groupdata[gidx].values.forEach(function (item) {
-					chartdata[groupdata[gidx].key][aidx] = item;
-					aidx++;
-				});
+			if (groupingrules.aggregate == null) {
+
+				for (var gidx = 0; gidx < groupdata.length; gidx++) {
+
+					chartdata[groupdata[gidx].key] = [];
+
+					var aidx = 0;
+					groupdata[gidx].values.forEach(function (item) {
+
+						if ((filterrules.dropvalues != null && item[filterrules.filtervaluename] > filterrules.dropvalues) || filterrules.dropvalues == null) {
+							chartdata[groupdata[gidx].key][aidx] = item;
+							aidx++;
+						}
+					});
+
+					if (filterrules.dropvalues != null && chartdata[groupdata[gidx].key].length == 0) { delete chartdata[groupdata[gidx].key]; }
+
+					if (filterrules.warnonarraysunequal && gidx > 0 && chartdata[groupdata[gidx].key].length != chartdata[groupdata[gidx - 1].key].length) {
+						console.error("The output arrays are of uneven length");
+                    }
+				}
+
 			}
+			else {
+
+				//if grouping by, we need to build a pseudo set: from a single value because we did an aggregate
+
+				//for time being we will drop any values less than the filter, we use the 
+				//filterrules.filtervaluename field key name
+				//in this version as there will ever be one value, because we grouped and aggregated, we just ignore the item altogether
+
+				for (var gidx = 0; gidx < groupdata.length; gidx++) {
+
+					if ((filterrules.dropvalues != null && groupdata[gidx][filterrules.filtervaluename] > filterrules.dropvalues) || filterrules.dropvalues == null) {
+
+						chartdata[groupdata[gidx].key] = [];
+						chartdata[groupdata[gidx].key][0] = {};
+
+						//as we have grouped by and aggregated the data is in a different format and we add each datapoint we find
+						//into the array keyed on the key of that aggregated field
+
+						for (var key in groupdata[gidx]) {
+							if (key != 'key') {
+								chartdata[groupdata[gidx].key][0][key] = groupdata[gidx][key];
+							};
+						}
+					}
+				}
+			}
+
 		}
-		else {  // no grouping end up with simple array of items within a setid with a stock name as part of an array of stocks
+		else {  // no grouping end up with simple array of items within a setid witch could be a stock name as part of an array of stocks
 
 			chartdata[setid] = {items: groupdata};
 
         }
 
-
 		// -------------------------------------- aggregator send stage  ------------------------------------------
-
-		//console.info(JSON.stringify(chartdata));
 
 		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata : chartdata} });
 

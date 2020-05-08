@@ -44,19 +44,21 @@ displaycharts = {
             series.randomness = 0.1;
             series.rotationThreshold = 0.5;
 
+            series.maxCount = 50;
+
             //chartdata {setid:[{},{}],setid{[{},{},{},{}]}}
             //chartdata {word:[{count:n}],word{[{count:n}]}}
 
-            series.data = [
-                {
-                "tag": "javascript",
-                "count": "1765836"
-                },
-                {
-                "tag": "java",
-                "count": "1517355"
-                }
-            ]
+            //series.data = [
+            //    {
+            //    "tag": "javascript",
+            //    "count": "1765836"
+            //    },
+            //    {
+            //    "tag": "java",
+            //    "count": "1517355"
+            //    }
+            //]
 
             series.data = [];
 
@@ -68,8 +70,10 @@ displaycharts = {
             series.heatRules.push({
                 "target": series.labels.template,
                 "property": "fill",
-                "min": am4core.color("#0000CC"),
-                "max": am4core.color("#CC00CC"),
+                //"max": am4core.color("#fffff0"),
+                //"min": am4core.color("#b3b2c1"),
+                "max": am4core.color("#fffff0"),
+                "min": am4core.color("#b0b0bf"),
                 "dataField": "value"
             });
 
@@ -84,7 +88,7 @@ displaycharts = {
             subtitle.text = "(click to open)";
 
             var title = chart.titles.create();
-            title.text = "Most Popular Tags @ StackOverflow";
+            title.text = "Most occurring words";
             title.fontSize = 20;
             title.fontWeight = "800";
 
@@ -295,6 +299,10 @@ displaycharts = {
             'amcharts4/themes/animated'
         ], function (am4core, am4charts, am4themes_animated) {
 
+            //TODO pass a meta data object to a chart that will set various variables to be used 
+            //representing the data being sent
+            //this chart is too hard coded for covid deaths 
+
             am4core.useTheme(am4themes_animated)
 
             var chart = am4core.create(divid, am4charts.XYChart);
@@ -371,10 +379,22 @@ displaycharts = {
                 return chart.colors.getIndex(target.dataItem.index);
             });
 
-            var date = new Date("2020-03-11");
-            var startDate = date;
+            var allData = chartdata;
+                var startDate = null;
+
+            //find the minimum date
+
+            for (var date in allData) {
+                if (startDate == null) { startDate=new Date(date) ;}
+                startDate = new Date(Math.min(new Date(date), startDate));
+            }
+
+            //var date = new Date("2020-03-11");
+            //var startDate = date;
+
+            var date = startDate;
             var endDate = new Date()
-            label.text = date.toISOString().slice(0, 10);
+            label.text = startDate.toISOString().slice(0, 10);
 
             var interval;
 
@@ -425,8 +445,6 @@ displaycharts = {
             }
 
             categoryAxis.sortBySeries = series;
-
-            var allData = chartdata;
 
             chart.data = JSON.parse(JSON.stringify(allData[date.toISOString().slice(0, 10)]));
             categoryAxis.zoom({ start: 0, end: 1 / chart.data.length });

@@ -16,6 +16,10 @@
 //todo always group and sum word input {setid:1,set:[{subject:uk,value:23},{subject:uk,value:233}]} merge and sum on uk
 //	mist be merged on the key value before
 
+
+//CONFIG MERGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 var startTime = new Date(); //use for getting elapsed times during debugging
 
 var feedDisplayPayload = { consumerid: '', providerid: '', payload: '' };
@@ -27,7 +31,8 @@ Module.register("MMM-ChartDisplay", {
 	//in config.js
 
 	defaults: {
-		text: "... loading",
+		//text: "... loading",
+		text:"CONFIG MERGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
 		id: "MMCD1", // the unique id of this consumer
 		setrules: [{						        //an array of rules to be applied to each incoming set
 			setid: null,							//must match the setids used in the provider so it can tracks the different data
@@ -35,6 +40,7 @@ Module.register("MMM-ChartDisplay", {
 				keepsubjects: null,				// an array of subjects only to keep, TODO both accept and reject
 				timestamp_min: null,				// the minimum item timestamp to keep TODO Range
 				dropvalues: null,					// the minimum value to accept TODO = range
+				warnonarraysunequal:true,		// if arrays coming out of the merging etc are of unequal lengths, error to console
 
 			},
 			reformat: {
@@ -45,11 +51,19 @@ Module.register("MMM-ChartDisplay", {
 				timestampAKA: null,				//rename the timestamp field name
 				timestampformat: null,			//display the timestamp in this format (i.e. "YYYY-MM-DD") Supports all moment formats including x and X for unix timestamps//null leave as it comes
 			},
+
+			//the input to some chart modules expects the data to be in format of:
+			//			{seriesname:[{seriesvalues},{seriesvalues}]}
+			//			for the race bar the seriesname should be a date, and then there will be an array of {subject:"subject name",value:amount}
+			//			for the word cloud, the seriesname is the word, and there an array of the count of words {count:countofword},
+			//			it is important to work backwards from the particular chart you are using to set the config so the correct format is arrived at
+			//			by adding an aggregate, the number of items in the array will only be one, although ineffecient, it allows for the flexibility to support many chart types with only simple changes within the chart code to adjust the data to fit that particular chart requirements
 			grouping: {
-				groupby: null,						//the field name to group the data together 
-				//should use any reformatted name data (i.e. .subject or timestampformatted)
-				action: null,						//the action to apply to any values within the group (sum,avg etc)
-				delta:null,							//show the difference between data points, ravgn rolling average of n points, perc = pecentage change, abs = numerical change,
+				groupby: null,					//the field name to group the data together 
+												//should use any reformatted name data (i.e. .subject or timestampformatted)
+				action: null,					//the action to apply to any values within the group (sum,avg etc)
+				aggregate: null,				//if grouping by, then aggregate the same values using this function null = just group and output values as an array
+												//otherwise apply the aggregate function to obtain a single output value
 			}
 		}],
 		merge: {
@@ -159,10 +173,14 @@ Module.register("MMM-ChartDisplay", {
 		Log.log(self.identifier + " " + this.identifier + "hello, received a socket notification @ " + this.showElapsed() + " " + notification + " - Payload: " + payload);
 
 		if (notification == "NEW_FEEDS_" + this.identifier) {
-			this.updateDom();
-			this.buildchart(payload.payload.chartdata);
+			if (payload.payload.chartdata != null) {
+				this.updateDom();
+				this.buildchart(payload.payload.chartdata);
+			}
+		else {
+			console.error("No chartData provided - no call to chart build made")
+			}
 		}
-
 	},
 
 	// Override dom generator.
