@@ -118,7 +118,7 @@ displaycharts = {
                 }
 
                 var label = chart.createChild(am4core.Label)
-                label.text = "Reported Covid19 Deaths\nper 1'000'000 total population. \n Bullet size uses logarithmic scale. \n Data: World Health Organization";
+                label.text = "Reported Covid19 Deaths yesterday. \n Bullet size uses logarithmic scale. \n Data: World Health Organization";
                 label.fontSize = 12;
                 label.align = "left";
                 label.valign = "bottom"
@@ -190,6 +190,11 @@ displaycharts = {
                 polygonSeries.tooltip.background.fillOpacity = 0.2;
                 polygonSeries.tooltip.background.cornerRadius = 20;
 
+                polygonSeries.tooltip.fontSize = 12;
+                polygonSeries.tooltip.color = am4core.color("#c1c2c3");
+                polygonSeries.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
+
+
                 var template = polygonSeries.mapPolygons.template;
                 template.nonScalingStroke = true;
                 template.fill = am4core.color("#f9e3ce");
@@ -250,6 +255,10 @@ displaycharts = {
                                 var polygon = measelsSeries.mapPolygons.create();
                                 polygon.multiPolygon = am4maps.getCircle(mapPolygon.visualLongitude, mapPolygon.visualLatitude, Math.max(0.2, Math.log(count) * Math.LN10 / 10));
                                 polygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": " + count;
+                                polygon.tooltip.fontSize = 12;
+                                //polygon.tooltip.color = am4core.color("#010203");
+                                polygon.tooltip.background.fill = am4core.color("rgba(1, 25, 55, 0.1)");
+
                                 mapPolygon.dummyData = polygon;
                                 polygon.events.on("over", function () {
                                     mapPolygon.isHover = true;
@@ -278,7 +287,7 @@ displaycharts = {
             let animation;
             setTimeout(function () {
                 animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
-            }, 3000)
+            }, 2000)
 
             //uncomment to reanble a click to stop option
 
@@ -293,6 +302,10 @@ displaycharts = {
 
     bar_chart_race: function (chartdata, divid) {
 
+        // The chart needs the chartdata to be:
+        //each dates set of data must be complete, no missing entries and they must be in the same order 
+        // the subject of the data must be called subject and the value called value
+
         require([
             'amcharts4/core',
             'amcharts4/charts',
@@ -301,7 +314,8 @@ displaycharts = {
 
             //TODO pass a meta data object to a chart that will set various variables to be used 
             //representing the data being sent
-            //this chart is too hard coded for covid deaths 
+            //the value field is called value
+            //the subject is called subject
 
             am4core.useTheme(am4themes_animated)
 
@@ -336,11 +350,11 @@ displaycharts = {
                 }
             })
 
-            var stepDuration = 1000;
+            var stepDuration = 400; // time between each different series display in milliseconds = 1000 = every second
 
             var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
             categoryAxis.renderer.grid.template.location = 0;
-            categoryAxis.dataFields.category = "Country";
+            categoryAxis.dataFields.category = "subject";
             categoryAxis.renderer.minGridDistance = 1;
             categoryAxis.renderer.inversed = true;
             categoryAxis.renderer.grid.template.disabled = true;
@@ -356,8 +370,8 @@ displaycharts = {
             valueAxis.fontSize = "12pt";
 
             var series = chart.series.push(new am4charts.ColumnSeries());
-            series.dataFields.categoryY = "Country";
-            series.dataFields.valueX = "Deaths";
+            series.dataFields.categoryY = "subject";
+            series.dataFields.valueX = "value";
             series.tooltipText = "{valueX.value}"
             series.columns.template.strokeOpacity = 0;
             series.columns.template.column.cornerRadiusBottomRight = 5;
@@ -398,12 +412,29 @@ displaycharts = {
 
             var interval;
 
+            ////use a nested settimeout with dynamic timing on each loop
+
             function play() {
-                interval = setInterval(function () {
+                var delay = stepDuration;
+                interval = setTimeout(function run() {
                     nextdate();
-                }, stepDuration)
+                    delay = stepDuration;
+
+                    if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 3 second timeout so the current view is held
+                        delay = 3000;
+                    }
+
+                    interval = setTimeout(run, delay);
+                }, delay);
                 nextdate();
             }
+
+            //function play() {
+            //    interval = setInterval(function () {
+            //        nextdate();
+            //    }, stepDuration)
+            //    nextdate();
+            //}
 
             function stop() {
                 if (interval) {
@@ -415,15 +446,15 @@ displaycharts = {
 
                 date = new Date(date.getTime() + (24 * 60 * 60 * 1000))
 
-                if (date > endDate) {
+                if (date > endDate) { //add a 3 second timeout so the current view is held
                     date = startDate;
                 }
 
                 var newData = allData[date.toISOString().slice(0, 10)];
                 var itemsWithNonZero = 0;
                 for (var i = 0; i < chart.data.length; i++) {
-                    chart.data[i].Deaths = newData[i].Deaths;
-                    if (chart.data[i].Deaths > 0) {
+                    chart.data[i].value = newData[i].value;
+                    if (chart.data[i].value > 0) {
                         itemsWithNonZero++;
                     }
                 }

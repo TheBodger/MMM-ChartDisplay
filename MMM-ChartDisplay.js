@@ -28,24 +28,33 @@ Module.register("MMM-ChartDisplay", {
 
 	defaults: {
 		text: "... loading",
-		id: "MMCD1", // the unique id of this consumer
-		setrules: [{						        //an array of rules to be applied to each incoming set
+		id: null, // the unique id of this consumer.ie MMCD1
+		setrules: {						        //an array of rules to be applied to each incoming set
 			setid: null,							//must match the setids used in the provider so it can tracks the different data
 			filter: {
 				keepsubjects: null,				// an array of subjects only to keep, TODO both accept and reject
 				timestamp_min: null,				// the minimum item timestamp to keep TODO Range
 				dropvalues: null,					// the minimum value to accept TODO = range
-				warnonarraysunequal:true,		// if arrays coming out of the merging etc are of unequal lengths, error to console
+				warnonarraysunequal: false,		// if arrays coming out of the merging etc are of unequal lengths, report the error to console
+												//some charts need all items across a time period to be present to work propoerly
 
 			},
 			reformat: {
 				dropkey: null,					//array of item fields to drop
-				subjectAKA: null,					//rename the subject field name
+				subjectAKA: null,				//rename the subject field name
 				valueAKA: null,					//rename the value field name
-				objectAKA: null,					//rename the object field name
+				objectAKA: null,				//rename the object field name
 				timestampAKA: null,				//rename the timestamp field name
 				timestampformat: null,			//display the timestamp in this format (i.e. "YYYY-MM-DD") Supports all moment formats including x and X for unix timestamps//null leave as it comes
 			},
+
+			references: {						//array of references and the rules to apply them to this setid
+				input:null,						//local file name of the reference file / must be in NDTF standard
+				setmatchkey: null,				//the name of the key (subject,value,object,timestamp,timestampformat) to match on in the set data
+				refmatchkey: null,				//the name of the key to match from the reference data
+				setvalue: null,					//the name of the field (subject,value,object,timestamp,timestampformat) to replace in the set data
+				refvalue: null,					//the name of the field to use to replace from the referene data								
+            },
 
 			//the input to some chart modules expects the data to be in format of:
 			//			{seriesname:[{seriesvalues},{seriesvalues}]}
@@ -59,8 +68,12 @@ Module.register("MMM-ChartDisplay", {
 				action: null,					//the action to apply to any values within the group (sum,avg etc)
 				aggregate: null,				//if grouping by, then aggregate the same values using this function null = just group and output values as an array
 												//otherwise apply the aggregate function to obtain a single output value
+				equalisearrays: false,			//merge previous entries to fill missing items across multiple entries in an array. 
+												//requires the 1st entry to be complete
+												//only available if grouping data and not aggregating data
+
 			}
-		}],
+		},
 		merge: {
 			//add a template that represents the output format, includes types of enhanced set, set, item, combined subject
 			//field names are standard / not the renamed ones // handle in the code
@@ -99,7 +112,15 @@ Module.register("MMM-ChartDisplay", {
 	setConfig: function (config) {  //replace the standard to ensure feeds defaults are correctly set
 		this.config = Object.assign({}, this.defaults, config);
 		for (var jidx = 0; jidx < config.setrules.length; jidx++) {
-			this.config.setrules[jidx] = Object.assign({}, this.defaults.setrules[0], config.setrules[jidx]);
+			this.config.setrules[jidx] = Object.assign({}, this.defaults.setrules, config.setrules[jidx]);
+			if (config.setrules[jidx].filter != null) { this.config.setrules[jidx].filter = Object.assign({}, this.defaults.setrules.filter, config.setrules[jidx].filter); }
+			if (config.setrules[jidx].reformat != null) { this.config.setrules[jidx].reformat = Object.assign({}, this.defaults.setrules.reformat, config.setrules[jidx].reformat); }
+			if (config.setrules[jidx].grouping != null) { this.config.setrules[jidx].grouping = Object.assign({}, this.defaults.setrules.grouping, config.setrules[jidx].grouping); }
+			if (config.setrules[jidx].references != null) { //as this is an array we need to handle all array entries
+				for (ridx = 0; ridx < config.setrules[jidx].references.length; ridx++) {
+					this.config.setrules[jidx].references[ridx] = Object.assign({}, this.defaults.setrules.references, config.setrules[jidx].references[ridx]);
+				}
+			}
 		}
 	},
 

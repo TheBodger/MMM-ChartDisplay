@@ -88,7 +88,7 @@ module.exports = NodeHelper.create({
 			feedstorage.key = feedstorekey;
 			feedstorage.titles = [payload.title];				// add the first title we get, which will be many if this is a merged set of feeds
 			feedstorage.sourcetitles = [payload.sourcetitle];	// add the first sourcetitle we get, which will be many if this is a merged set of feeds
-			feedstorage.providers = [payload.providerid];		// add the first provider we get, whic will be many if there are multiple providers and merged
+			feedstorage.providers = [payload.providerid];		// add the first provider we get, which will be many if there are multiple providers and merged
 
 			this.consumerstorage[moduleinstance].feedstorage[feedstorekey] = feedstorage;
 		}
@@ -117,14 +117,21 @@ module.exports = NodeHelper.create({
 				return item.setid == setid;
 			})
 
-			if (ruleset == null) { console.error("no valid rule set found in config"); return; }
+			if (ruleset == null) {
+				console.error("no valid rule set found in config"); return;
+			}
+
+			//each of the ruleset headings must be present somewhere (defaults or config) but can be empty
+
 			if (ruleset.filter == null) { console.error("no valid rule set found in config: filters"); return; }
 			if (ruleset.reformat == null) { console.error("no valid rule set found in config : reformat"); return; }
 			if (ruleset.grouping == null) { console.error("no valid rule set found in config : grouping"); return; }
+			if (ruleset.references == null) { console.error("no valid rule set found in config : references"); return; }
 
 			var filterrules = ruleset.filter;
 			var reformatrules = ruleset.reformat;
 			var groupingrules = ruleset.grouping;
+			var referencerules = ruleset.references;
 
 			filterrules['filtervaluename'] = '';
 
@@ -181,6 +188,18 @@ module.exports = NodeHelper.create({
 					if (reformatrules.timestampAKA != null) { newitem.timestampname = reformatrules.timestampAKA; }
 					if (reformatrules.objectnameAKA != null) { newitem.objectname = reformatrules.objectnameAKA; }
 
+					// start determining which keyvaluesnames will end up in the array to be equalised, only allowed when grouping none aggregating
+					// dont add value as we dont equalise arrays on the value
+					if (groupingrules.equalisearrays && groupingrules.groupby != null && groupingrules.aggregate == null) {
+
+						if (groupingrules.groupby ='timestampformat') { //special case for grouping on timestamp
+							groupingrules['equalisearraykeys'] = [newitem.subjectname, 'timestampformat', newitem.objectname];
+						}
+						else {
+							groupingrules['equalisearraykeys'] = [newitem.subjectname, newitem.timestampname, newitem.objectname];
+						}
+					}
+
 					if (reformatrules.timestampformat != null) {
 						newitem.timestampformat = moment(item.timestamp).format(reformatrules.timestampformat)
 						if (reformatrules.timestampformat.toLowerCase() == "x") { newitem.timestampformat = parseInt(newitem.timestampformat) ;}
@@ -189,8 +208,13 @@ module.exports = NodeHelper.create({
 					if (reformatrules.dropkey != null) { //this should be an array
 						for (var didx = 0; didx < reformatrules.dropkey.length; didx++) {
 
+							if (groupingrules['equalisearraykeys'] != null) {
+								groupingrules['equalisearraykeys'] = groupingrules['equalisearraykeys'].filter(function (e) { return e !== newitem[reformatrules.dropkey[didx] + "name"] });
+							}
+
 							delete newitem[reformatrules.dropkey[didx]];
 							delete newitem[reformatrules.dropkey[didx] + "name"];
+
 							if (reformatrules.dropkey[didx] == "timestamp") { delete newitem[reformatrules.dropkey[didx] + "formatted"] }
 						}
 					}
@@ -205,18 +229,64 @@ module.exports = NodeHelper.create({
 
 		// -------------------------------------- aggregator reference stage ------------------------------------------
 
-		//if a reference set is provided for any of the items (subject,object,value etc)
-		//this is where we replace the incoming value with the reference value
+		//check there is something worthwhile to do before we get the data, all reference rulesets must be complete entered
+		//if a rules set is valid we load the data here to minimise the data transfers
 
-		//any mismatching items will be dropped
-		//any matching item's values will be replaced and the original information dropped
+		var processreferences = true;
 
-		//this can also be used to filter out items when they have a subject we are not interesedted in / or interested in
+		referencerules.forEach(function (reference,index) {
 
-		//if mismatched console.info dropped item: because a mismatch occured on field: value:
+			if (reference.input == null || reference.setmatchkey == null || reference.refmatchkey == null || reference.setvalue == null || reference.refvalue == null) {
+				console.error("reference not valid, missing a value: exit processing of this set", JSON.stringify(reference));
+				processreferences = false;
+			}
+			else {
 
-		//TODO use self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items
+				var input = JSONutils.getJSON({ useHTTP: false, input: reference.input });
 
+				if (input == null) {
+					console.error("Input file missing - exiting processing this set");
+				}
+				else {
+					referencerules[index]['referencedata'] = input;
+					
+                }
+            }
+		})
+		//as we can be deleting items from the array we have to process it in reverse so the idx value is always valid
+
+		if (processreferences) {
+			for (var idx = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.length - 1; idx > -1; idx--) {
+
+				referencerules.forEach(function (reference) {
+
+					//now apply the ruleset in the reference to the current item, 
+
+					var item = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[idx];
+
+					console.debug(item[reference.setmatchkey]);
+
+					var refvalue = reference.referencedata.find(key =>
+						key[reference.refmatchkey] == item[reference.setmatchkey])[reference.refvalue];
+
+					console.debug(refvalue);
+
+					if (refvalue == null) { //cant find a match between the two so rules say we delete this item !!
+
+						delete self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[idx];
+
+					}
+					else { //we got a match so update the item and replace it in the array
+
+						item[reference.setvalue] = refvalue;
+
+						self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[idx] = item;
+
+					}
+
+				})
+			}
+		}
 
 		// -------------------------------------- aggregator merge stage with template  ------------------------------------------
 
@@ -233,6 +303,15 @@ module.exports = NodeHelper.create({
 			// see the file usingLinq.md
 
 			//the following groupby also renames the fields so at the end of the group by everything is okdokey
+
+			//remove the groupby from the list of equalisers
+			//which of course might be timestampformat; 
+
+			if (groupingrules['equalisearraykeys'] != null) {
+				groupingrules['equalisearraykeys'] = groupingrules['equalisearraykeys'].filter(function (e) { return e !== groupingrules.groupby });
+			}
+
+			//hopefully we are now at only one entry in the equaliser set.
 
 			var keySelector = "{key : $." + groupingrules.groupby + "}"
 			var elementSelector = '{';
@@ -356,13 +435,74 @@ module.exports = NodeHelper.create({
 						}
 					});
 
-					if (filterrules.dropvalues != null && chartdata[groupdata[gidx].key].length == 0) { delete chartdata[groupdata[gidx].key]; }
+					if (filterrules.dropvalues != null && chartdata[groupdata[gidx].key].length == 0) {
+						delete chartdata[groupdata[gidx].key];
+					}
 
 					if (filterrules.warnonarraysunequal && gidx > 0 && chartdata[groupdata[gidx].key].length != chartdata[groupdata[gidx - 1].key].length) {
-						console.error("The output arrays are of uneven length");
-                    }
-				}
 
+						console.error("The output arrays are of different length");
+
+						//try to equalise the array entries because of the mismatch
+						//the equaliser array contains the key value to match the array entries on
+						//if more that one key is present then we have to abort the try
+
+						if (groupingrules['equalisearraykeys'] != null) {
+							if (groupingrules['equalisearraykeys'].length > 1) {
+								console.error("Multiple entries in the equaliser set, only works when one is present");
+							}
+						else { // merge the missing entries from the longer set to the shorter set //assumes that the first set is complete
+
+							var arrayOne = chartdata[groupdata[gidx].key];
+							var arrayTwo = chartdata[groupdata[gidx - 1].key];
+							var matchingkeyname = groupingrules['equalisearraykeys'][0];
+
+							const results1 = arrayOne.filter(({ [matchingkeyname]: id1 }) => !arrayTwo.some(({ [matchingkeyname]: id2 }) => id2 === id1));
+							const results2 = arrayTwo.filter(({ [matchingkeyname]: id1 }) => !arrayOne.some(({ [matchingkeyname]: id2 }) => id2 === id1));
+
+							chartdata[groupdata[gidx].key] = [...arrayOne, ...results2];
+							chartdata[groupdata[gidx - 1].key] = [...arrayTwo, ...results1];
+
+							console.info("Found the Differences" + JSON.stringify(results1) + " missing from previous entry and this is missing from the current entry" + JSON.stringify(results2));
+
+							//TODO we probably need the sort to occur just before the chartdata is sent so that all data sets are in the same order
+							//this sort assumes that all unchanged arrays are in ascending key order
+							//and finally need to sort the arrays so they are all in the same order!!
+							//we have to do it here as there can be retrospectives changes to array entries
+
+							//here sort the arrays depending on any changes found
+
+								if (results2.length > 0) {
+
+									chartdata[groupdata[gidx].key].sort
+										(function (a, b) {
+											//var x = a.type.toLowerCase();
+											//var y = b.type.toLowerCase();
+											var x = a[matchingkeyname]
+											var y = b[matchingkeyname]
+											if (x < y) { return -1; }
+											if (x > y) { return 1; }
+											return 0;
+										}); 
+								}
+
+								if (results1.length > 0) {
+									chartdata[groupdata[gidx - 1].key].sort
+										(function (a, b) {
+											//var x = a.type.toLowerCase();
+											//var y = b.type.toLowerCase();
+											var x = a[matchingkeyname]
+											var y = b[matchingkeyname]
+											if (x < y) { return -1; }
+											if (x > y) { return 1; }
+											return 0;
+										});
+								}
+								console.info("Resorted arrays");
+							}
+						}
+					}
+				}
 			}
 			else {
 

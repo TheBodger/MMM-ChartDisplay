@@ -47,4 +47,31 @@ pass to aggregator
 
 		npm install requirejs
 
+
+###references
+
+
+		//if a reference set is provided for any of the items (subject,object,value etc)
+
+		//any mismatching items will be dropped
+		//any matching item's values will be replaced and the original information dropped
+
+		//this can also be used to filter out items when they have a subject we are not interested in / or interested in
+
+		//TODO add a utility to actually populate a reference file // but it has to be assumed that a reference is largely static
+
+		//    some systems use FIPS  will other iso "FIPS": "UK",			"ISO3166-1-Alpha-2": "GB",
+		//    use countries.json to convert the two.
+
+		example reference config:
+
+		```
+		{
+			input: 'countries.json',
+			setmatchkey: 'subject',
+			refmatchkey: 'FIPS',
+			setvalue: 'subject',
+			refvalue: 'ISO3166-1-Alpha-2',
+		}
+		```
 		
