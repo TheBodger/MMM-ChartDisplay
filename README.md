@@ -208,6 +208,7 @@ pass to aggregator (node helper)
 	-filter out/in specific items of data
 	-|rename data entities as required
 	 |reformat data entities as required
+	 -apply reference data
 	 -carry out aggregate, grouping, sorting etc
 	-|merge together different data within the payload TODO
 	 |use template to merge data, template will refer to reformatted/ renamed items entities TODO
@@ -222,18 +223,17 @@ This is a WIP; changes are being made all the time to improve the compatibility 
 
 #### Creating_new_providers
 
-
 With the existing providers, there are different ways of obtaining and formatting data into the standard NDTF data required by the MMM-ChartDisplay module, look at each to determine if any match your specific requirement.
 
 To create a new provider consider the following:
 
-copy any of the existing GitHub provider repositories with all the files: main module and node_helper, etc
-rename it externally and internally so it has a meaningful name
-the main module should need few if any changes
-the node_helper is where most of the work is done, with the new processing within the `fetchfeed` section. all other sections should be ok as they are. But there may be the odd tweak here and there. if you find yourself changing acres of code, then you are probably best building a module outside of this pattern.
-when completed, use the readme.md from any of the providers as it has a relatively readable format, and much of it is reusable.
-test test test, and finally publish to GIT with all the relevant information updated in all the files
-best of luck and thanks if you actually read to this point
-P.s. let me know if you actually create a new provider using a new pull request.
+1. copy any of the existing GitHub provider repositories with all the files: main module and node_helper, etc
+2. rename it externally and internally so it has a meaningful name
+3. the main module should need few if any changes
+4. the node_helper is where most of the work is done, with the new processing within the `fetchfeed` section. all other sections should be ok as they are. But there may be the odd tweak here and there. if you find yourself changing acres of code, then you are probably best building a module outside of this pattern.
+5. when completed, use the readme.md from any of the providers as it has a relatively readable format, and much of it is reusable.
+6. test test test, and finally publish to GIT with all the relevant information updated in all the files
+7. best of luck and thanks if you actually read to this point
+8. P.s. let me know if you actually create a new provider using a new pull request.
 
 ## the end
