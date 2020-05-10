@@ -164,18 +164,19 @@ Most of these options are used in the large example configuration file included 
 
 There are some options in the code marked as TODO. ignore these.
 
-The config id must match between providers and consumers. Being a case sensitive environment extra care is needed here.
-The config setrules setid must match a setid from a provider.
-If using keepsubjects, make sure the correct value is added to the subject field sent by the relevant MMM-ChartProvider module
+The config id must match between providers and consumers. Being a case sensitive environment extra care is needed here.<BR>
+The config setrules setid must match a setid from a provider.<BR>
+If using keepsubjects, make sure the correct value is added to the subject field sent by the relevant MMM-ChartProvider module<BR>
 
 
 ### Available_Charts_Usage
 
-	//the input to some chart modules expects the data to be in format of:
-			//			{seriesname:[{seriesvalues},{seriesvalues}]}
-			//			for the race bar the seriesname should be a date, and then there will be an array of {subject:"subject name",value:amount}
-			//			for the word cloud, the seriesname is the word, and then an array of the count of words {count:countofword},
-			
+<pre>
+the input to some chart modules expects the data to be in format of:
+	{seriesname:[{seriesvalues},{seriesvalues}]}
+	for the race bar the seriesname should be a date, and then there will be an array of {subject:"subject name",value:amount}. The arrays must be the same length, contain the same subjects and be sorted intot he same order; otherwise the chart wont work correctly.<BR>
+	for the word cloud, the seriesname is the word, and then an array of the count of words {count:countofword},			</pre>
+<BR>			
 The included file, displaycharts.js contains a number of amchart example charts amended to work within a browser / electron / node.js environment such as found in magic mirror. To enable amcharts, the loadam4charts.js is included in this module. 
 
 #### loadam4charts.js
