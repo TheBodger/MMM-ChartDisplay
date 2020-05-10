@@ -50,6 +50,13 @@
                         return window.am4themes_microchart;
                     }
                 },
+                'amcharts4/themes/amchartsdark': {
+                    deps: ['amcharts4/core'],
+                    exports: 'amcharts4/themes/amchartsdark',
+                    init: function () {
+                        return window.am4themes_amchartsdark;
+                    }
+                },
                 'amcharts4/plugins/wordCloud': {
                     deps: ['amcharts4/core'],
                     exports: 'amcharts4/plugins/wordCloud',

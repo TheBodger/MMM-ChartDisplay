@@ -48,13 +48,13 @@ Module.register("MMM-ChartDisplay", {
 				timestampformat: null,			//display the timestamp in this format (i.e. "YYYY-MM-DD") Supports all moment formats including x and X for unix timestamps//null leave as it comes
 			},
 
-			references: {						//array of references and the rules to apply them to this setid
-				input:null,						//local file name of the reference file / must be in NDTF standard
-				setmatchkey: null,				//the name of the key (subject,value,object,timestamp,timestampformat) to match on in the set data
-				refmatchkey: null,				//the name of the key to match from the reference data
-				setvalue: null,					//the name of the field (subject,value,object,timestamp,timestampformat) to replace in the set data
-				refvalue: null,					//the name of the field to use to replace from the referene data								
-            },
+			references: []						//array of references and the rules to apply them to this setid. not defaults as all entries must be entered in the config
+				//input:null,						//local file name of the reference file / must be in NDTF standard
+				//setmatchkey: null,				//the name of the key (subject,value,object,timestamp,timestampformat) to match on in the set data
+				//refmatchkey: null,				//the name of the key to match from the reference data
+				//setvalue: null,					//the name of the field (subject,value,object,timestamp,timestampformat) to replace in the set data
+				//refvalue: null,					//the name of the field to use to replace from the referene data								
+            ,
 
 			//the input to some chart modules expects the data to be in format of:
 			//			{seriesname:[{seriesvalues},{seriesvalues}]}

@@ -9,6 +9,14 @@
 //copied from the examples in amcharts4/examples/javascript
 //note some of these charts are very resource intensive and may not render on a raspberry pi at all.
 
+//tag_cloud:
+//rotating_globe:
+//bar_chart_race:
+//rotating_globe:
+//simple_bar_chart: //example of creating a bespoke theme to adjust settings and use of a amchart colour theme
+//simple_line_chart:
+//stock_comparing_values:
+
 /*
  * ---------------------------------------
  * These demos were created using amCharts 4.
@@ -84,13 +92,13 @@ displaycharts = {
             var hoverState = series.labels.template.states.create("hover");
             hoverState.properties.fill = am4core.color("#FF0000");
 
-            var subtitle = chart.titles.create();
-            subtitle.text = "(click to open)";
+            //var subtitle = chart.titles.create();
+            //subtitle.text = "(click to open)";
 
-            var title = chart.titles.create();
-            title.text = "Most occurring words";
-            title.fontSize = 20;
-            title.fontWeight = "800";
+            //var title = chart.titles.create();
+            //title.text = "Most occurring words";
+            //title.fontSize = 20;
+            //title.fontWeight = "800";
 
         })
     },
@@ -284,12 +292,13 @@ displaycharts = {
 
                     //{ "AD": 519.44 };
 
-            let animation;
-            setTimeout(function () {
-                animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
-            }, 2000)
+                let animation;
+                //uncomment to reenable animating the world
+            //setTimeout(function () {
+            //    animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
+            //}, 4000)
 
-            //uncomment to reanble a click to stop option
+            //uncomment to re-enable a click to stop option
 
             //chart.seriesContainer.events.on("down", function () {
             //    if (animation) {
@@ -317,7 +326,7 @@ displaycharts = {
             //the value field is called value
             //the subject is called subject
 
-            am4core.useTheme(am4themes_animated)
+            //am4core.useTheme(am4themes_animated)
 
             var chart = am4core.create(divid, am4charts.XYChart);
             chart.padding(10, 10, 10, 10);
@@ -350,7 +359,7 @@ displaycharts = {
                 }
             })
 
-            var stepDuration = 400; // time between each different series display in milliseconds = 1000 = every second
+            var stepDuration = 1000; // time between each different series display in milliseconds = 1000 = every second
 
             var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
             categoryAxis.renderer.grid.template.location = 0;
@@ -414,27 +423,27 @@ displaycharts = {
 
             ////use a nested settimeout with dynamic timing on each loop
 
-            function play() {
-                var delay = stepDuration;
-                interval = setTimeout(function run() {
-                    nextdate();
-                    delay = stepDuration;
-
-                    if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 3 second timeout so the current view is held
-                        delay = 3000;
-                    }
-
-                    interval = setTimeout(run, delay);
-                }, delay);
-                nextdate();
-            }
-
             //function play() {
-            //    interval = setInterval(function () {
+            //    var delay = stepDuration;
+            //    interval = setTimeout(function run() {
             //        nextdate();
-            //    }, stepDuration)
+            //        delay = stepDuration;
+
+            //        if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 3 second timeout so the current view is held
+            //            delay = 3000;
+            //        }
+
+            //        interval = setTimeout(run, delay);
+            //    }, delay);
             //    nextdate();
             //}
+
+            function play() {
+                interval = setInterval(function () {
+                    nextdate();
+                }, stepDuration)
+                nextdate();
+            }
 
             function stop() {
                 if (interval) {
@@ -446,7 +455,7 @@ displaycharts = {
 
                 date = new Date(date.getTime() + (24 * 60 * 60 * 1000))
 
-                if (date > endDate) { //add a 3 second timeout so the current view is held
+                if (date > endDate) { 
                     date = startDate;
                 }
 
@@ -711,6 +720,116 @@ displaycharts = {
                 //chart.scrollbarX.background.fill = am4core.color("#dc67ab");
                 //chart.scrollbarX.background.fillOpacity = 0.2;
                 //chart.scrollbarX.maxHeight = "20px"
+
+        });
+    },
+     simple_bar_chart: function (chartdata, divid) {
+
+        //edit this to change the URL and relevant text to match the actual site you want to click through to (i.e. twitter search)
+
+        require([
+            'amcharts4/core',
+            'amcharts4/charts',
+            'amcharts4/themes/animated',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
+
+            function am4themes_myTheme(target) {
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 16;
+                }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 16;
+                }
+            }
+
+            am4core.useTheme(am4themes_animated);
+            am4core.useTheme(am4themes_amchartsdark);
+            am4core.useTheme(am4themes_myTheme);
+
+            var chart = am4core.create(divid, am4charts.XYChart);
+
+            chart.colors.saturation = 0.4;
+
+            //data expected to be in a grouped by key format, with the subject and values in a single array
+            //only one series should be provided
+            // the array of data is extracted and provided to the  chart by taking the first series id found and taking the linked array as data 
+
+            var firstseries = true;
+
+            for (var seriesid in chartdata) {
+                if (firstseries) {
+                    firstseries = false;
+                    chart.data = chartdata[seriesid];
+                }
+            }
+
+            //chart.data = [{
+            //    "country": "USA",
+            //    "visits": 3025
+            //}, {
+            //    "country": "China",
+            //    "visits": 1882
+            //}, {
+            //    "country": "Japan",
+            //    "visits": 1809
+            //}, {
+            //    "country": "Germany",
+            //    "visits": 1322
+            //}, {
+            //    "country": "UK",
+            //    "visits": 1122
+            //}, {
+            //    "country": "France",
+            //    "visits": 1114
+            //}, {
+            //    "country": "India",
+            //    "visits": 984
+            //}, {
+            //    "country": "Spain",
+            //    "visits": 711
+            //}, {
+            //    "country": "Netherlands",
+            //    "visits": 665
+            //}, {
+            //    "country": "Russia",
+            //    "visits": 580
+            //}, {
+            //    "country": "South Korea",
+            //    "visits": 443
+            //}, {
+            //    "country": "Canada",
+            //    "visits": 441
+            //}];
+
+
+            var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
+            categoryAxis.renderer.grid.template.location = 0;
+            categoryAxis.dataFields.category = "subject";
+            categoryAxis.renderer.minGridDistance = 20;
+
+            var valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
+            valueAxis.renderer.maxLabelPosition = 0.98;
+
+            var series = chart.series.push(new am4charts.ColumnSeries());
+            series.dataFields.categoryY = "subject";
+            series.dataFields.valueX = "value";
+            series.tooltipText = "{valueX.value}";
+            series.sequencedInterpolation = true;
+            series.defaultState.transitionDuration = 1000;
+            series.sequencedInterpolationDelay = 100;
+            series.columns.template.strokeOpacity = 0;
+
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.behavior = "panY";
+
+
+            // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
+            series.columns.template.adapter.add("fill", function (fill, target) {
+                return chart.colors.getIndex(target.dataItem.index);
+            });
+
+            am4core.unuseTheme(am4themes_myTheme);
 
         });
     }
