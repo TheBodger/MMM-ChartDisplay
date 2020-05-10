@@ -136,7 +136,7 @@ Most of these options are used in the large example configuration file included 
 | `filter`            |*Optional* - contains an set of filter rules that will reduce the data within this set.
 | `keepsubjects`            |*Optional* - An array of subjects to keep, all other data in the set without these subjects will be dropped<br><br> **Possible values:** an array of unique strings or values<br> **Default value:** none
 | `timestamp_min`            |*Optional* - The minimum item timestamp to keep<br><br> **Possible values:** a valid (moment.js) date / time<br> **Default value:** none
-| `warnonarraysunequal`            |*Optional* - Will post an error if true when the output arrays of values are unequal. Certain charts require all arrays of data to be equal. (see notes on available charts)<br><br> **Possible values:** a valid numeric value<br> **Default value:** none
+| `warnonarraysunequal`            |*Optional* - Will post an error if true when the output arrays of values are unequal. Certain charts require all arrays of data to be equal. (see notes on available charts)<br><br> **Possible values:** true or false<br> **Default value:** false
 | `dropvalues`            |*Optional* - The minimum value to keep. Only works if the set data value is numeric<br><br> **Possible values:** true, false<br> **Default value:** none
 | `reformat`            |*Optional* - contains an set of reformat rules that will change the data within each data set item.
 | `dropkey`            |*Optional* - An array of item fields to drop<br><br> **Possible values:** subject,object,value,timestamp<br> **Default value:** none
