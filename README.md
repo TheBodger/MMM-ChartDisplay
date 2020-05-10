@@ -187,7 +187,7 @@ Amcharts comes with a large number of modules and datasets. To make any of these
 
 Each example chart is included as a discrete function within a JSON object called displaycharts.
 
-To add a new chart, copy an existing chart, replace the body of the function with the new function. Determine the best way to present the data to the chart.data or the series set. Add any additional amcharts modules or datasets required at the top of the function. if using a amcharts modeul, dartaset,them etc that isnt in loadam4charts.js, add it in the same format as exsiting entries.
+To add a new chart, copy an existing chart, rename it, replace the body of the original chart function with the new chart details. Determine the best way to present the data to the chart.data or the series set. Look at the existing charts to see how different charts have different data requirements and how they are catered for. Add any additional amcharts modules or datasets required at the top of the function. if using an amcharts module, dataset, theme etc that isnt in loadam4charts.js, add it in the same format as existing entries.
 
 For all other things amchart, check out their great documentation.
 
