@@ -36,7 +36,7 @@ Module.register("MMM-ChartDisplay", {
 				timestamp_min: null,				// the minimum item timestamp to keep TODO Range
 				dropvalues: null,					// the minimum value to accept TODO = range
 				warnonarraysunequal: false,		// if arrays coming out of the merging etc are of unequal lengths, report the error to console
-												//some charts need all items across a time period to be present to work propoerly
+												//some charts need all items across a time period to be present to work properly
 
 			},
 			reformat: {
