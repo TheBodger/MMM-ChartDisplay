@@ -96,9 +96,10 @@ example:
 {subject:'Great Britain',object:'Has population of',value:66873421,timestamp:'Sun May 10 2020 08:57:03 GMT+0100 (British Summer Time)'}
 ```
 
-### MagicMirror² Configuration
+### MagicMirrorÂ² Configuration
 
-To use this module, add the following configuration block to the modules array in the `config/config.js` file:
+To use this module, add the following configuration block to the modules array in the config file
+
 ```js
 		{
 			module: "MMM-ChartDisplay",
@@ -124,7 +125,7 @@ To use this module, add the following configuration block to the modules array i
 
 ### Configuration_Options
 
-Most of these options are used in the large example configuration file included (example.config.js)that created the example screen shot above and can be used for helping understand the various options.
+Most of these options are used in the large example configuration file included  [example.config.js](https://github.com/TheBodger/MMM-ChartDisplay/blob/master/example.config.js) that created the example screen shot above and can be used for helping understand the various options.
 
 | Option                  | Details
 |------------------------ |--------------
