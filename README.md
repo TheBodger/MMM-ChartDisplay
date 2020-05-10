@@ -196,14 +196,14 @@ For all other things amchart, check out their great documentation.
 //tag_cloud: creates a word cloud depending on the word and word count in the data. Words can be clicked on to open a web page built from the word and a URL within this code.<BR><BR>
 //rotating_globe: creates a world map that rotates, can be dragged and zoomed. will take the first entry in a grouped by data series and use the array of country code/value to populate country specific circles sized based on the value.<BR><BR>
 //bar_chart_race: creates an animated daily bar chart that shows the position of a subject relative to the others in each data set. Currently wont work if the rotating globe is included in the same display. See elsewere about this charts very specific data requirements<BR><BR>
-//simple_bar_chart: creates a barchart of subject values. it is an example of creating a bespoke theme to adjust global display settings and use of an amchart colour theme<BR><BR>
+//simple_bar_chart: creates a barchart of subject values. it is an example of creating a bespoke theme to adjust global display settings and use of an amchart colour theme. This pair of themes combined is a good basis for all MM charts<BR><BR>
 //simple_line_chart: creates a simple line chart<BR><BR>
 //stock_comparing_values: creates a multiline graph of stock values across a time period, displaying the values as a percentage of the initial value. A good method of comparing the movement of stocks.<BR><BR>
 
 #### flow within the display module showing when the variosu stages occur
 
 receive data from a chart provider in NDTF
-
+<pre>
 pass to aggregator (node helper)
 	-filter out/in specific items of data
 	-|rename data entities as required
@@ -213,7 +213,7 @@ pass to aggregator (node helper)
 	 |use template to merge data, template will refer to reformatted/ renamed items entities TODO
 	-carry out data validation and output set building
 	-send all aggregated data to the display module for consumption by a specific chart
-
+</pre>
 #### Display config options:
 
 Additional display options and chart types and options are being added all the time.
