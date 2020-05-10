@@ -39,11 +39,29 @@ displaycharts = {
             'amcharts4/core',
             'amcharts4/charts',
             'amcharts4/themes/animated',
-            'amcharts4/plugins/wordCloud'
-        ], function (am4core, am4charts, am4themes_animated, am4plugins_wordCloud) {
+            'amcharts4/plugins/wordCloud',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated, am4plugins_wordCloud, am4themes_amchartsdark) {
 
             // Themes begin
             am4core.useTheme(am4themes_animated);
+            am4core.useTheme(am4themes_amchartsdark);
+
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.LabelBullet) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4charts.Legend) {
+                    target.fontSize = 14;
+                }
+            }
+            am4core.useTheme(am4themes_mmTheme);
             // Themes end
 
             var chart = am4core.create(divid, am4plugins_wordCloud.WordCloud);
@@ -108,10 +126,26 @@ displaycharts = {
             'amcharts4/core',
             'amcharts4/themes/animated',
             'amcharts4/maps',
-            'amcharts4/geodata/worldLow'
-        ], function (am4core, am4themes_animated, am4maps, am4geodata_worldLow) {
+            'amcharts4/geodata/worldLow',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4themes_animated, am4maps, am4geodata_worldLow, am4themes_amchartsdark) {
 
                 am4core.useTheme(am4themes_animated);
+                am4core.useTheme(am4themes_amchartsdark);
+
+                function am4themes_mmTheme(target) {
+                    if (target instanceof am4charts.LabelBullet) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4charts.AxisRenderer) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4core.Tooltip) {
+                        target.fontSize = 14;
+                    }
+
+                }
+                am4core.useTheme(am4themes_mmTheme);
 
                 // Create chart instance
                 var chart = am4core.create(divid, am4maps.MapChart);
@@ -126,7 +160,7 @@ displaycharts = {
                 }
 
                 var label = chart.createChild(am4core.Label)
-                label.text = "Reported Covid19 Deaths yesterday. \n Bullet size uses logarithmic scale. \n Data: World Health Organization";
+                label.text = "Reported Covid19 Deaths yesterday. \n Bullet size uses logarithmic scale. \n Data: World Health Organization etc";
                 label.fontSize = 12;
                 label.align = "left";
                 label.valign = "bottom"
@@ -198,11 +232,6 @@ displaycharts = {
                 polygonSeries.tooltip.background.fillOpacity = 0.2;
                 polygonSeries.tooltip.background.cornerRadius = 20;
 
-                polygonSeries.tooltip.fontSize = 12;
-                polygonSeries.tooltip.color = am4core.color("#c1c2c3");
-                polygonSeries.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
-
-
                 var template = polygonSeries.mapPolygons.template;
                 template.nonScalingStroke = true;
                 template.fill = am4core.color("#f9e3ce");
@@ -263,9 +292,6 @@ displaycharts = {
                                 var polygon = measelsSeries.mapPolygons.create();
                                 polygon.multiPolygon = am4maps.getCircle(mapPolygon.visualLongitude, mapPolygon.visualLatitude, Math.max(0.2, Math.log(count) * Math.LN10 / 10));
                                 polygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": " + count;
-                                polygon.tooltip.fontSize = 12;
-                                //polygon.tooltip.color = am4core.color("#010203");
-                                polygon.tooltip.background.fill = am4core.color("rgba(1, 25, 55, 0.1)");
 
                                 mapPolygon.dummyData = polygon;
                                 polygon.events.on("over", function () {
@@ -318,15 +344,27 @@ displaycharts = {
         require([
             'amcharts4/core',
             'amcharts4/charts',
-            'amcharts4/themes/animated'
-        ], function (am4core, am4charts, am4themes_animated) {
+            'amcharts4/themes/animated',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
 
             //TODO pass a meta data object to a chart that will set various variables to be used 
             //representing the data being sent
             //the value field is called value
             //the subject is called subject
 
-            //am4core.useTheme(am4themes_animated)
+            am4core.useTheme(am4themes_animated)
+                am4core.useTheme(am4themes_amchartsdark);
+
+                function am4themes_mmTheme(target) {
+                    if (target instanceof am4charts.AxisRenderer) {
+                        target.fontSize = 16;
+                    }
+                    if (target instanceof am4core.Tooltip) {
+                        target.fontSize = 16;
+                    }
+                }
+                am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
             chart.padding(10, 10, 10, 10);
@@ -367,16 +405,13 @@ displaycharts = {
             categoryAxis.renderer.minGridDistance = 1;
             categoryAxis.renderer.inversed = true;
             categoryAxis.renderer.grid.template.disabled = true;
-            categoryAxis.renderer.labels.template.fill = am4core.color("#f2f2f2");
-            categoryAxis.fontSize = "12pt";
+
 
             var valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
             valueAxis.min = 0;
             valueAxis.rangeChangeEasing = am4core.ease.linear;
             valueAxis.rangeChangeDuration = stepDuration;
             valueAxis.extraMax = 0.1;
-            valueAxis.renderer.labels.template.fill = am4core.color("#f2f2f2")
-            valueAxis.fontSize = "12pt";
 
             var series = chart.series.push(new am4charts.ColumnSeries());
             series.dataFields.categoryY = "subject";
@@ -393,7 +428,6 @@ displaycharts = {
             labelBullet.label.text = "{values.valueX.workingValue.formatNumber('#.0as')}";
             labelBullet.label.textAlign = "end";
             labelBullet.label.dx = -10;
-            labelBullet.fontSize = "12pt";
 
             chart.zoomOutButton.disabled = true;
 
@@ -503,10 +537,45 @@ displaycharts = {
         require([
             'amcharts4/core',
             'amcharts4/charts',
-            'amcharts4/themes/animated'
-        ], function (am4core, am4charts, am4themes_animated) {
+            'amcharts4/themes/animated',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
 
                 am4core.useTheme(am4themes_animated)
+                am4core.useTheme(am4themes_amchartsdark);
+
+                function am4themes_mmTheme(target) {
+                    if (target instanceof am4charts.LabelBullet) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4charts.AxisRenderer) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4core.Tooltip) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4charts.Legend) {
+                        target.fontSize = 14;
+                    }
+                }
+
+                //dateAxis.tooltip.color = am4core.color("#c1c2c3");
+                //dateAxis.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
+                //dateAxis.renderer.line.stroke = am4core.color("#f1f2f3");
+                //dateAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
+                //dateAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
+                //dateAxis.renderer.labels.template.fontSize = 14;
+
+                //valueAxis.renderer.labels.template.fill = am4core.color("#f2f2f2")
+
+                //polygonSeries.tooltip.color = am4core.color("#c1c2c3");
+                //polygonSeries.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
+
+                //valueAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
+                //valueAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
+                //valueAxis.renderer.line.stroke = am4core.color("#f1f2f3");
+
+                am4core.useTheme(am4themes_mmTheme);
 
                 var chart = am4core.create(divid, am4charts.XYChart);
                 chart.padding(0, 15, 0, 15);
@@ -529,17 +598,8 @@ displaycharts = {
                 dateAxis.renderer.maxLabelPosition = 0.99;
                 dateAxis.keepSelection = true;
 
-                dateAxis.renderer.line.stroke = am4core.color("#f1f2f3");
-                dateAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                dateAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                dateAxis.renderer.labels.template.fontSize = 14;
-
                 dateAxis.groupData = true;
                 dateAxis.minZoomCount = 5;
-
-                dateAxis.tooltip.fontSize = 12;
-                dateAxis.tooltip.color = am4core.color("#c1c2c3");
-                dateAxis.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
 
                 // these two lines makes the axis to be initially zoomed-in
                 // dateAxis.start = 0.7;
@@ -559,13 +619,6 @@ displaycharts = {
                 valueAxis.renderer.labels.template.padding(2, 2, 2, 2);
 
                 //valueAxis.renderer.maxLabelPosition = 0.95;
-                valueAxis.renderer.fontSize = 14
-
-                valueAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                valueAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                valueAxis.renderer.line.stroke = am4core.color("#f1f2f3");
-
-                valueAxis.renderer.labels.template.fontSize = 14;
 
                 var series = {};
                 var series1 = null;
@@ -584,7 +637,7 @@ displaycharts = {
                     series[seriesdata].tooltip.background.fill = am4core.color("#fff");
                     series[seriesdata].tooltip.background.strokeWidth = 2;
                     series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
-                    series[seriesdata].tooltip.fontSize = 12;
+
                     //series[seriesdata].tooltip.animationEasing = 1;//1/2 second
                     //series[seriesdata].tooltip.animationDuration = 1;
 
@@ -606,16 +659,9 @@ displaycharts = {
                 valueAxis2.renderer.labels.template.verticalCenter = "bottom";
                 valueAxis2.renderer.labels.template.padding(2, 2, 2, 2);
                 //valueAxis.renderer.maxLabelPosition = 0.95;
-                valueAxis2.renderer.fontSize = 14;
 
                 valueAxis2.renderer.gridContainer.background.fill = am4core.color("#000000");
                 valueAxis2.renderer.gridContainer.background.fillOpacity = 0.05;
-
-                valueAxis2.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                valueAxis2.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                valueAxis2.renderer.line.stroke = am4core.color("#f1f2f3");
-
-                valueAxis2.renderer.labels.template.fontSize = 14;
 
                 //var volumeSeries = chart.series.push(new am4charts.StepLineSeries());
                 //volumeSeries.fillOpacity = 1;
@@ -631,7 +677,6 @@ displaycharts = {
                 //volumeSeries.tooltip.label.fill = volumeSeries.stroke;
 
                 chart.cursor = new am4charts.XYCursor();
-                chart.fontSize = 14;
 
                 var scrollbarX = new am4charts.XYChartScrollbar();
                 scrollbarX.series.push(series[series1]);
@@ -645,7 +690,6 @@ displaycharts = {
 
                 chart.legend = new am4charts.Legend();
                 chart.legend.labels.template.text = "[normal {color}]{name}[/]";
-                chart.legend.labels.template.fontSize = 14;
 
         });
     },
@@ -654,19 +698,31 @@ displaycharts = {
         require([
             'amcharts4/core',
             'amcharts4/charts',
-            'amcharts4/themes/animated'
-        ], function (am4core, am4charts, am4themes_animated) {
+            'amcharts4/themes/animated',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
+
             am4core.useTheme(am4themes_animated);
+                am4core.useTheme(am4themes_amchartsdark);
+
+                function am4themes_mmTheme(target) {
+                    if (target instanceof am4charts.LabelBullet) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4charts.AxisRenderer) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4core.Tooltip) {
+                        target.fontSize = 14;
+                    }
+                }
+                am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
                 chart.paddingRight = 20;
 
             var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
                 dateAxis.tooltip.disabled = true;
-                dateAxis.renderer.line.stroke = am4core.color("#f1f2f3");
-                dateAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                dateAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                dateAxis.renderer.labels.template.fontSize = 14;
                 dateAxis.renderer.line.strokeOpacity = 1;
                 dateAxis.renderer.line.strokeWidth = 2;
                 dateAxis.renderer.grid.template.strokeOpacity = 1;
@@ -687,10 +743,6 @@ displaycharts = {
                 valueAxis.renderer.grid.template.strokeOpacity = 1;
                 
                 valueAxis.renderer.grid.template.strokeWidth = 1;
-                valueAxis.renderer.labels.template.fontSize = 14;
-                valueAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                valueAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                valueAxis.renderer.line.stroke = am4core.color("#f1f2f3");
 
             // create a line series for each set of data received
 
@@ -734,18 +786,21 @@ displaycharts = {
             'amcharts4/themes/amchartsdark'
         ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
 
-            function am4themes_myTheme(target) {
-                if (target instanceof am4charts.AxisRenderer) {
-                    target.fontSize = 16;
-                }
-                if (target instanceof am4core.Tooltip) {
-                    target.fontSize = 16;
-                }
-            }
-
             am4core.useTheme(am4themes_animated);
             am4core.useTheme(am4themes_amchartsdark);
-            am4core.useTheme(am4themes_myTheme);
+
+                function am4themes_mmTheme(target) {
+                    if (target instanceof am4charts.LabelBullet) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4charts.AxisRenderer) {
+                        target.fontSize = 14;
+                    }
+                    if (target instanceof am4core.Tooltip) {
+                        target.fontSize = 14;
+                    }
+                }
+            am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
 
@@ -828,8 +883,6 @@ displaycharts = {
             series.columns.template.adapter.add("fill", function (fill, target) {
                 return chart.colors.getIndex(target.dataItem.index);
             });
-
-            am4core.unuseTheme(am4themes_myTheme);
 
         });
     }

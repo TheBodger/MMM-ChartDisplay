@@ -105,7 +105,7 @@ module.exports = NodeHelper.create({
 
 			if (this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] == null) {
 
-				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { items: [], groupeditems: [] };
+				this.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid] = { baseitems: [], groupeditems: [] };
 
 			}
 
@@ -219,7 +219,7 @@ module.exports = NodeHelper.create({
 						}
 					}
 
-					self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.push(newitem);
+					self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].baseitems.push(newitem);
 
 				}
 
@@ -234,53 +234,63 @@ module.exports = NodeHelper.create({
 
 		var processreferences = true;
 
-		referencerules.forEach(function (reference,index) {
+		if (referencerules.length == 0) {processreferences = false;
+		}
+		else {
+			referencerules.forEach(function (reference, index) {
 
-			if (reference.input == null || reference.setmatchkey == null || reference.refmatchkey == null || reference.setvalue == null || reference.refvalue == null) {
-				console.error("reference not valid, missing a value: exit processing of this set", JSON.stringify(reference));
-				processreferences = false;
-			}
-			else {
-
-				var input = JSONutils.getJSON({ useHTTP: false, input: reference.input });
-
-				if (input == null) {
-					console.error("Input file missing - exiting processing this set");
+				if (reference.input == null || reference.setmatchkey == null || reference.refmatchkey == null || reference.setvalue == null || reference.refvalue == null) {
+					console.error("reference not valid, missing a value: exit processing of this set", JSON.stringify(reference));
+					processreferences = false;
 				}
 				else {
-					referencerules[index]['referencedata'] = input;
+
+					var input = JSONutils.getJSON({ useHTTP: false, input: reference.input });
+
+					if (input == null) {
+						console.error("Input file missing - exiting processing this set");
+					}
+					else {
+						referencerules[index]['referencedata'] = input;
 					
-                }
-            }
-		})
+					}
+				}
+			})
+		}
+		//this is a cludge, we deep clone baseitems to a new temporary array of items and then continue
+
+		var items = JSON.parse(JSON.stringify(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].baseitems));
+
 		//as we can be deleting items from the array we have to process it in reverse so the idx value is always valid
 
 		if (processreferences) {
-			for (var idx = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.length - 1; idx > -1; idx--) {
+			for (var idx = items.length - 1; idx > -1; idx--) {
 
 				referencerules.forEach(function (reference) {
 
 					//now apply the ruleset in the reference to the current item, 
 
-					var item = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[idx];
+					var item = items[idx];
 
-					console.debug(item[reference.setmatchkey]);
+					if (item[reference.setmatchkey].toLowerCase() == 'us') {
+						console.debug(item[reference.setmatchkey]);
+                    }
 
 					var refvalue = reference.referencedata.find(key =>
 						key[reference.refmatchkey] == item[reference.setmatchkey])[reference.refvalue];
 
-					console.debug(refvalue);
+					console.debug(reference.refmatchkey, reference.refvalue,item[reference.setmatchkey],refvalue);
 
 					if (refvalue == null) { //cant find a match between the two so rules say we delete this item !!
 
-						delete self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[idx];
+						delete items[idx];
 
 					}
 					else { //we got a match so update the item and replace it in the array
 
 						item[reference.setvalue] = refvalue;
 
-						self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[idx] = item;
+						items[idx] = item;
 
 					}
 
@@ -318,7 +328,7 @@ module.exports = NodeHelper.create({
 
 			//use the first stored item as a list of all the data we need to keep after grouping
 
-			var tempitem = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items[0];
+			var tempitem = items[0];
 
 			var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to be matched string
 
@@ -345,7 +355,7 @@ module.exports = NodeHelper.create({
 
 			if (groupingrules.aggregate == null) {
 
-				var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+				var groupeddata = linq.from(items)
 					.groupBy(
 						keySelector,
 						elementSelector,
@@ -362,7 +372,7 @@ module.exports = NodeHelper.create({
 
 				var resultSelector = "{ key : $.key, " + tempitem["valuename"] + " : $$." + groupingrules.aggregate + "('$.value') }"
 
-				var groupeddata = linq.from(self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items)
+				var groupeddata = linq.from(items)
 					.groupBy(
 						keySelector,
 						null,
@@ -384,7 +394,7 @@ module.exports = NodeHelper.create({
 
 			//we have to complete the rename and drop unwanted stuff here 
 
-			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].items.forEach(function (item) {
+			items.forEach(function (item) {
 
 				var tempitem = {};
 
@@ -407,6 +417,8 @@ module.exports = NodeHelper.create({
 		// ----------------------------------- merge step -------------------------------------
 		//TODO merge disparate data based on a template //may need to NOT lose the names until here so we can merge correctly
 		// ------------------------------------------------------------------------------------
+
+		//delete items; //dont need this anymore
 
 		var chartdata = {}; //ready to go for this particular chart requirement
 		var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
