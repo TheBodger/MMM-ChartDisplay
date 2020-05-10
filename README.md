@@ -48,23 +48,25 @@ The charts are produced using AMCHARTS.
 			a freeware license. Refer to included LICENSE file. The license is also
 			[available online](https://github.com/amcharts/amcharts4/blob/master/dist/script/LICENSE).
 
-		Download the standalone javscript version here: https://www.amcharts.com/download/
+	
 
-		Don't use NPM installation as this doesn't work with this MMM module
+	Download the standalone javscript version here: https://www.amcharts.com/download/
 
-		It must be extracted into a new MMM-ChartDisplay/amcharts4 folder
+	Don't use NPM installation as this doesn't work with this MMM module
 
-			download and extract the amcharts v4 standalone javascript files (core, fonts and geodata) into this and sub directories:
+	It must be extracted into a new MMM-ChartDisplay/amcharts4 folder
 
-			/MagicMirror/modules/MMM-ChartDisplay/amcharts4
-			/MagicMirror/modules/MMM-ChartDisplay/amcharts4/fonts
-			/MagicMirror/modules/MMM-ChartDisplay/amcharts4/geodata
+		download and extract the amcharts v4 standalone javascript files (core, fonts and geodata) into this and sub directories:
 
-		To enable AMCHARTS to work within the client side module, requirejs is required.
+		/MagicMirror/modules/MMM-ChartDisplay/amcharts4
+		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/fonts
+		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/geodata
 
-		run the install inside the /MagicMirror/vendor directory 
+	To enable AMCHARTS to work within the client side module, requirejs is required.
 
-			npm install requirejs
+	run the install inside the /MagicMirror/vendor directory 
+
+		npm install requirejs
 
 	The following node modules are also required: 
 
