@@ -272,24 +272,15 @@ module.exports = NodeHelper.create({
 
 					var item = items[idx];
 
-					if (item[reference.setmatchkey].toLowerCase() == 'us') {
-						console.debug(item[reference.setmatchkey]);
-                    }
-
 					var refvalue = reference.referencedata.find(key =>
 						key[reference.refmatchkey] == item[reference.setmatchkey])[reference.refvalue];
 
-					console.debug(reference.refmatchkey, reference.refvalue,item[reference.setmatchkey],refvalue);
-
 					if (refvalue == null) { //cant find a match between the two so rules say we delete this item !!
-
 						delete items[idx];
-
 					}
 					else { //we got a match so update the item and replace it in the array
 
 						item[reference.setvalue] = refvalue;
-
 						items[idx] = item;
 
 					}
@@ -510,7 +501,7 @@ module.exports = NodeHelper.create({
 											return 0;
 										});
 								}
-								console.info("Resorted arrays");
+								//console.info("Resorted arrays");
 							}
 						}
 					}
