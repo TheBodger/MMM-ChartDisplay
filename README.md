@@ -89,7 +89,7 @@ The sets of data provided to the ChartDisplay module are always in the NDTF stan
 This standard ensures that providers and consumers can work together. The standard is an array of JSON objects, each object taking the format of:
 
 ```
-{subject:'subject value',object:'object name',value:data value,timestamp;timestamp}
+{subject:'subject value',object:'object name',value:data value,timestamp:timestamp}
 ```
 example:
 ```
@@ -155,6 +155,7 @@ Most of these options are used in the large example configuration file included 
 | `groupby`            |*Optional* - The name of the key in the item data set that the data will be grouped by ((subject,value,object,timestamp,timestampformat))<br><br> **Possible values:** Any valid item key name name<br> **Default value:** none
 | `aggregate`            |*Optional* - The name of the key in the item data set that the data will be grouped by ((subject,value,object,timestamp,timestampformat))<br><br> **Possible values:** Any valid item key name name<br> **Default value:** none
 | `equalisearrays`            |*Optional* - Will merge missing entries in the grouped by array so each array contains the same key entries. Merging will simply take whatever value is available in the array that isnt missing the value. This requires that the incoming item data sets for the first grouped by key value contains all available keys. Options is only available if grouping data and not aggregating data<br><br> **Possible values:** true or false<br> **Default value:** false
+| `resort`            |*Optional* - Will sort the grouped data into ascending groupy key order. Is usefull to ensure that the equlise array option has the best opportunity to correct the arrays<br><br> **Possible values:** true or false<br> **Default value:** false
 | `merge`            |*Optional* - Contains a set of merging rules that will be applied to the output to determine what each set of arrays are keyed on or in future to add additional dataset values to the output data set
 | `outputsetid`            |*Optional* - The name of the key field whose value will be used as a setid for the data to be passed to the charts.<br><br> **Possible values:** Any valid item key name name or null - null adds a unique setid starting at a value of 1<br> **Default value:** none
 | `charttype`            |*Required* - The name of the example chart provided to display. See available chart types for more details of available charts. (subject,value,object,timestamp,timestampformat) whose value will be used to match on the reference file keys<br><br> **Possible values:** Any existing chart name in displaycharts.js<br> **Default value:** none

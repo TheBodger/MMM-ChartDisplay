@@ -161,7 +161,7 @@ module.exports = NodeHelper.create({
 
 				//remove any items with a value less than this value 
 				//this is only applied here if there is no group by rules
-				//if there are group by rules then this applied as part of the group stage
+				//if there are group by rules then this is applied as part of the group stage
 
 				if (filterrules.dropvalues != null && groupingrules.groupby == null) {
 					if (!isNaN(parseFloat(item.value))) {
@@ -409,14 +409,28 @@ module.exports = NodeHelper.create({
 		//TODO merge disparate data based on a template //may need to NOT lose the names until here so we can merge correctly
 		// ------------------------------------------------------------------------------------
 
-		//delete items; //dont need this anymore
-
 		var chartdata = {}; //ready to go for this particular chart requirement
 		var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
 
 		if (groupingrules.groupby != null) {
 
 			//if grouping by, we need to build a pseudo set: from multiple values in an array
+
+			//before we start we can resort the results so far so that we can control the data going into the array equaliser step
+
+			if (groupingrules.resort) {
+
+				groupdata.sort
+					(function (a, b) {
+						var x = a["key"]
+						var y = b["key"]
+						if (x < y) { return -1; }
+						if (x > y) { return 1; }
+						return 0;
+					}); 
+
+
+            }
 
 			//for time being we drop any items in the array not matching the value filter rule
 			//if all values are dropped from an item, then that item is dropped
@@ -445,6 +459,9 @@ module.exports = NodeHelper.create({
 					if (filterrules.warnonarraysunequal && gidx > 0 && chartdata[groupdata[gidx].key].length != chartdata[groupdata[gidx - 1].key].length) {
 
 						console.error("The output arrays are of different length");
+						if (gidx == 1 && chartdata[groupdata[gidx].key].length > chartdata[groupdata[gidx - 1].key].length) {
+							console.error("The first entry in the array is not complete", groupdata[gidx - 1].key,JSON.stringify(chartdata[groupdata[gidx - 1].key]));
+						}
 
 						//try to equalise the array entries because of the mismatch
 						//the equaliser array contains the key value to match the array entries on
@@ -543,7 +560,11 @@ module.exports = NodeHelper.create({
 
 		// -------------------------------------- aggregator send stage  ------------------------------------------
 
-		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata : chartdata} });
+		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata: chartdata } });
+
+		if (this.consumerstorage[moduleinstance].config.filename != null) {
+			JSONutils.putJSON("./" + this.consumerstorage[moduleinstance].config.filename, chartdata);
+		}
 
 	},
 

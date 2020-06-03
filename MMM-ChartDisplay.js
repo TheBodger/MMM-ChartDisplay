@@ -61,7 +61,9 @@ Module.register("MMM-ChartDisplay", {
 			//			for the race bar the seriesname should be a date, and then there will be an array of {subject:"subject name",value:amount}
 			//			for the word cloud, the seriesname is the word, and there an array of the count of words {count:countofword},
 			//			it is important to work backwards from the particular chart you are using to set the config so the correct format is arrived at
-			//			by adding an aggregate, the number of items in the array will only be one, although ineffecient, it allows for the flexibility to support many chart types with only simple changes within the chart code to adjust the data to fit that particular chart requirements
+			//			by adding an aggregate, the number of items in the array will only be one, although inefficient, 
+			//			it allows for the flexibility to support many chart types with only simple changes within the chart code to adjust the data 
+			//			to fit that particular chart requirements
 			grouping: {
 				groupby: null,					//the field name to group the data together 
 												//should use any reformatted name data (i.e. .subject or timestampformatted)
@@ -70,7 +72,9 @@ Module.register("MMM-ChartDisplay", {
 												//otherwise apply the aggregate function to obtain a single output value
 				equalisearrays: false,			//merge previous entries to fill missing items across multiple entries in an array. 
 												//requires the 1st entry to be complete
+												//only available if warnonarraysunequal=true
 												//only available if grouping data and not aggregating data
+				resort: false,					//resorts the data prior to going into the equalisarrays step, sorts on the groupby field
 
 			}
 		},
