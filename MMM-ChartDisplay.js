@@ -33,7 +33,7 @@ Module.register("MMM-ChartDisplay", {
 			setid: null,							//must match the setids used in the provider so it can tracks the different data
 			filter: {
 				keepsubjects: null,				// an array of subjects only to keep, TODO both accept and reject
-				timestamp_min: null,				// the minimum item timestamp to keep TODO Range
+				timestamp_min: null,				// "today" or must be in a valid moment.js format the minimum item timestamp to keep TODO Range
 				dropvalues: null,					// the minimum value to accept TODO = range
 				warnonarraysunequal: false,		// if arrays coming out of the merging etc are of unequal lengths, report the error to console
 												//some charts need all items across a time period to be present to work properly
@@ -117,7 +117,7 @@ Module.register("MMM-ChartDisplay", {
 		this.config = Object.assign({}, this.defaults, config);
 		for (var jidx = 0; jidx < config.setrules.length; jidx++) {
 			this.config.setrules[jidx] = Object.assign({}, this.defaults.setrules, config.setrules[jidx]);
-			if (config.setrules[jidx].filter != null) { this.config.setrules[jidx].filter = Object.assign({}, this.defaults.setrules.filter, config.setrules[jidx].filter); }
+			if (config.setrules[jidx].filter != null) {this.config.setrules[jidx].filter = Object.assign({}, this.defaults.setrules.filter, config.setrules[jidx].filter);}
 			if (config.setrules[jidx].reformat != null) { this.config.setrules[jidx].reformat = Object.assign({}, this.defaults.setrules.reformat, config.setrules[jidx].reformat); }
 			if (config.setrules[jidx].grouping != null) { this.config.setrules[jidx].grouping = Object.assign({}, this.defaults.setrules.grouping, config.setrules[jidx].grouping); }
 			if (config.setrules[jidx].references != null) { //as this is an array we need to handle all array entries
@@ -125,6 +125,7 @@ Module.register("MMM-ChartDisplay", {
 					this.config.setrules[jidx].references[ridx] = Object.assign({}, this.defaults.setrules.references, config.setrules[jidx].references[ridx]);
 				}
 			}
+			
 		}
 	},
 
@@ -178,8 +179,8 @@ Module.register("MMM-ChartDisplay", {
 		if (notification == 'CHART_PROVIDER_DATA') {
 			//some one said they have data, it might be for me !
 
-			console.log(payload.consumerid)
-			console.log(this.config.id)
+			//console.log(payload.consumerid)
+			//console.log(this.config.id)
 
 			if (payload.consumerid == this.config.id) {
 
@@ -245,7 +246,7 @@ Module.register("MMM-ChartDisplay", {
 	buildchart: function (chartdata) {
 
 		console.log(this.config.charttype);
-		for (var key in chartdata) { console.log(key);}
+		//for (var key in chartdata) { console.log(key);}
 		console.log(this.identifier);
 
 		displaycharts[this.config.charttype](chartdata, this.identifier + 'chartdiv');

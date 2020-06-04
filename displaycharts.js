@@ -151,7 +151,7 @@ displaycharts = {
                 var chart = am4core.create(divid, am4maps.MapChart);
                 var interfaceColors = new am4core.InterfaceColorSet();
 
-                // Chech if proper geodata is loaded
+                // Check if proper geodata is loaded
                 try {
                     chart.geodata = am4geodata_worldLow;
                 }
@@ -319,18 +319,18 @@ displaycharts = {
                     //{ "AD": 519.44 };
 
                 let animation;
-                //uncomment to reenable animating the world
-            //setTimeout(function () {
-            //    animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
-            //}, 4000)
+                //uncomment to enable animating the world
+                setTimeout(function () {
+                    animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
+                }, 4000)
 
-            //uncomment to re-enable a click to stop option
+                //uncomment to re-enable a click to stop option
 
-            //chart.seriesContainer.events.on("down", function () {
-            //    if (animation) {
-            //        animation.stop();
-            //    }
-            //})
+                //chart.seriesContainer.events.on("down", function () {
+                //    if (animation) {
+                //        animation.stop();
+                //    }
+                //})
 
         })
     },
@@ -354,17 +354,17 @@ displaycharts = {
             //the subject is called subject
 
             am4core.useTheme(am4themes_animated)
-                am4core.useTheme(am4themes_amchartsdark);
+            am4core.useTheme(am4themes_amchartsdark);
 
-                function am4themes_mmTheme(target) {
-                    if (target instanceof am4charts.AxisRenderer) {
-                        target.fontSize = 16;
-                    }
-                    if (target instanceof am4core.Tooltip) {
-                        target.fontSize = 16;
-                    }
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 16;
                 }
-                am4core.useTheme(am4themes_mmTheme);
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 16;
+                }
+            }
+            am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
             chart.padding(10, 10, 10, 10);
@@ -406,7 +406,6 @@ displaycharts = {
             categoryAxis.renderer.inversed = true;
             categoryAxis.renderer.grid.template.disabled = true;
 
-
             var valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
             valueAxis.min = 0;
             valueAxis.rangeChangeEasing = am4core.ease.linear;
@@ -437,7 +436,7 @@ displaycharts = {
             });
 
             var allData = chartdata;
-                var startDate = null;
+            var startDate = null;
 
             //find the minimum date
 
@@ -457,27 +456,27 @@ displaycharts = {
 
             ////use a nested settimeout with dynamic timing on each loop
 
-            //function play() {
-            //    var delay = stepDuration;
-            //    interval = setTimeout(function run() {
-            //        nextdate();
-            //        delay = stepDuration;
-
-            //        if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 3 second timeout so the current view is held
-            //            delay = 3000;
-            //        }
-
-            //        interval = setTimeout(run, delay);
-            //    }, delay);
-            //    nextdate();
-            //}
-
             function play() {
-                interval = setInterval(function () {
+                var delay = stepDuration;
+                interval = setTimeout(function run() {
                     nextdate();
-                }, stepDuration)
+                    delay = stepDuration;
+
+                    if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 6 second timeout so the current view is held
+                        delay = 6000;
+                    }
+
+                    interval = setTimeout(run, delay);
+                }, delay);
                 nextdate();
             }
+
+            //function play() {
+            //    interval = setInterval(function () {
+            //        nextdate();
+            //    }, stepDuration)
+            //    nextdate();
+            //}
 
             function stop() {
                 if (interval) {
@@ -512,7 +511,7 @@ displaycharts = {
                 }
 
                 chart.invalidateRawData();
-
+                console.log("invalidating")
                 label.text = date.toISOString().slice(0, 10);
 
                 categoryAxis.zoom({ start: 0, end: itemsWithNonZero / categoryAxis.dataItems.length });
@@ -703,20 +702,20 @@ displaycharts = {
         ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
 
             am4core.useTheme(am4themes_animated);
-                am4core.useTheme(am4themes_amchartsdark);
+            am4core.useTheme(am4themes_amchartsdark);
 
-                function am4themes_mmTheme(target) {
-                    if (target instanceof am4charts.LabelBullet) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4charts.AxisRenderer) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4core.Tooltip) {
-                        target.fontSize = 14;
-                    }
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.LabelBullet) {
+                    target.fontSize = 14;
                 }
-                am4core.useTheme(am4themes_mmTheme);
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 14;
+                }
+            }
+            am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
                 chart.paddingRight = 20;
@@ -777,8 +776,6 @@ displaycharts = {
     },
      simple_bar_chart: function (chartdata, divid) {
 
-        //edit this to change the URL and relevant text to match the actual site you want to click through to (i.e. twitter search)
-
         require([
             'amcharts4/core',
             'amcharts4/charts',
@@ -789,17 +786,17 @@ displaycharts = {
             am4core.useTheme(am4themes_animated);
             am4core.useTheme(am4themes_amchartsdark);
 
-                function am4themes_mmTheme(target) {
-                    if (target instanceof am4charts.LabelBullet) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4charts.AxisRenderer) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4core.Tooltip) {
-                        target.fontSize = 14;
-                    }
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.LabelBullet) {
+                    target.fontSize = 14;
                 }
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 14;
+                }
+            }
             am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
@@ -818,45 +815,6 @@ displaycharts = {
                     chart.data = chartdata[seriesid];
                 }
             }
-
-            //chart.data = [{
-            //    "country": "USA",
-            //    "visits": 3025
-            //}, {
-            //    "country": "China",
-            //    "visits": 1882
-            //}, {
-            //    "country": "Japan",
-            //    "visits": 1809
-            //}, {
-            //    "country": "Germany",
-            //    "visits": 1322
-            //}, {
-            //    "country": "UK",
-            //    "visits": 1122
-            //}, {
-            //    "country": "France",
-            //    "visits": 1114
-            //}, {
-            //    "country": "India",
-            //    "visits": 984
-            //}, {
-            //    "country": "Spain",
-            //    "visits": 711
-            //}, {
-            //    "country": "Netherlands",
-            //    "visits": 665
-            //}, {
-            //    "country": "Russia",
-            //    "visits": 580
-            //}, {
-            //    "country": "South Korea",
-            //    "visits": 443
-            //}, {
-            //    "country": "Canada",
-            //    "visits": 441
-            //}];
-
 
             var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
             categoryAxis.renderer.grid.template.location = 0;

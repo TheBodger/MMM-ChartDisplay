@@ -27,8 +27,11 @@ var RSS = require('../MMM-FeedUtilities/RSS');
 const structures = require("../MMM-ChartUtilities/structures");
 const utilities = require("../MMM-ChartUtilities/common");
 
+var commonutils = require('../MMM-FeedUtilities/utilities');
+
 const JSONutils = new utilities.JSONutils();
 const configutils = new utilities.configutils();
+
 
 module.exports = NodeHelper.create({
 
@@ -49,11 +52,16 @@ module.exports = NodeHelper.create({
 		var moduleinstance = aconfig.moduleinstance;
 		var config = aconfig.config;
 
+		for (var jidx = 0; jidx < config.setrules.length; jidx++) {
+			if (config.setrules[jidx].filter != null) {
+				config.setrules[jidx].filter.timestamp_min = commonutils.calcTimestamp(config.setrules[jidx].filter.timestamp_min);
+			}
+		}
 		//store a local copy so we dont have keep moving it about
 
 		this.consumerstorage[moduleinstance] = { config: config, feedstorage: {} };
 
-		//additional work to simplify the config for use in the module
+		
 	},
 
 	processfeeds: function (newfeeds) {
