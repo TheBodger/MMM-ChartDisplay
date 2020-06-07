@@ -335,213 +335,17 @@ displaycharts = {
         })
     },
 
-    bar_chart_race: function (chartdata, divid) {
-
-        // The chart needs the chartdata to be:
-        //each dates set of data must be complete, no missing entries and they must be in the same order 
-        // the subject of the data must be called subject and the value called value
-
-        require([
-            'amcharts4/core',
-            'amcharts4/charts',
-            'amcharts4/themes/animated',
-            'amcharts4/themes/amchartsdark'
-        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
-
-            //TODO pass a meta data object to a chart that will set various variables to be used 
-            //representing the data being sent
-            //the value field is called value
-            //the subject is called subject
-
-            am4core.useTheme(am4themes_animated)
-            am4core.useTheme(am4themes_amchartsdark);
-
-            function am4themes_mmTheme(target) {
-                if (target instanceof am4charts.AxisRenderer) {
-                    target.fontSize = 16;
-                }
-                if (target instanceof am4core.Tooltip) {
-                    target.fontSize = 16;
-                }
-            }
-            am4core.useTheme(am4themes_mmTheme);
-
-            var chart = am4core.create(divid, am4charts.XYChart);
-            chart.padding(10, 10, 10, 10);
-
-            chart.numberFormatter.bigNumberPrefixes = [
-                { "number": 1e+3, "suffix": "K" },
-                { "number": 1e+6, "suffix": "M" },
-                { "number": 1e+9, "suffix": "B" }
-            ];
-
-            var label = chart.plotContainer.createChild(am4core.Label);
-            label.x = am4core.percent(97);
-            label.y = am4core.percent(95);
-            label.horizontalCenter = "right";
-            label.verticalCenter = "middle";
-            label.dx = -15;
-            label.fontSize = 20;
-            label.fill = am4core.color("rgb(255, 0, 0)");
-
-            var playButton = chart.plotContainer.createChild(am4core.PlayButton);
-            playButton.x = am4core.percent(97);
-            playButton.y = am4core.percent(95);
-            playButton.verticalCenter = "middle";
-            playButton.events.on("toggled", function (event) {
-                if (event.target.isActive) {
-                    play();
-                }
-                else {
-                    stop();
-                }
-            })
-
-            var stepDuration = 1000; // time between each different series display in milliseconds = 1000 = every second
-
-            var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
-            categoryAxis.renderer.grid.template.location = 0;
-            categoryAxis.dataFields.category = "subject";
-            categoryAxis.renderer.minGridDistance = 1;
-            categoryAxis.renderer.inversed = true;
-            categoryAxis.renderer.grid.template.disabled = true;
-
-            var valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
-            valueAxis.min = 0;
-            valueAxis.rangeChangeEasing = am4core.ease.linear;
-            valueAxis.rangeChangeDuration = stepDuration;
-            valueAxis.extraMax = 0.1;
-
-            var series = chart.series.push(new am4charts.ColumnSeries());
-            series.dataFields.categoryY = "subject";
-            series.dataFields.valueX = "value";
-            series.tooltipText = "{valueX.value}"
-            series.columns.template.strokeOpacity = 0;
-            series.columns.template.column.cornerRadiusBottomRight = 5;
-            series.columns.template.column.cornerRadiusTopRight = 5;
-            series.interpolationDuration = stepDuration;
-            series.interpolationEasing = am4core.ease.linear;
-
-            var labelBullet = series.bullets.push(new am4charts.LabelBullet())
-            labelBullet.label.horizontalCenter = "right";
-            labelBullet.label.text = "{values.valueX.workingValue.formatNumber('#.0as')}";
-            labelBullet.label.textAlign = "end";
-            labelBullet.label.dx = -10;
-
-            chart.zoomOutButton.disabled = true;
-
-            // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
-            series.columns.template.adapter.add("fill", function (fill, target) {
-                return chart.colors.getIndex(target.dataItem.index);
-            });
-
-            var allData = chartdata;
-            var startDate = null;
-
-            //find the minimum date
-
-            for (var date in allData) {
-                if (startDate == null) { startDate=new Date(date) ;}
-                startDate = new Date(Math.min(new Date(date), startDate));
-            }
-
-            //var date = new Date("2020-03-11");
-            //var startDate = date;
-
-            var date = startDate;
-            var endDate = new Date()
-            label.text = startDate.toISOString().slice(0, 10);
-
-            var interval;
-
-            ////use a nested settimeout with dynamic timing on each loop
-
-            function play() {
-                var delay = stepDuration;
-                interval = setTimeout(function run() {
-                    nextdate();
-                    delay = stepDuration;
-
-                    if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 6 second timeout so the current view is held
-                        delay = 6000;
-                    }
-
-                    interval = setTimeout(run, delay);
-                }, delay);
-                nextdate();
-            }
-
-            //function play() {
-            //    interval = setInterval(function () {
-            //        nextdate();
-            //    }, stepDuration)
-            //    nextdate();
-            //}
-
-            function stop() {
-                if (interval) {
-                    clearInterval(interval);
-                }
-            }
-
-            function nextdate() {
-
-                date = new Date(date.getTime() + (24 * 60 * 60 * 1000))
-
-                if (date > endDate) { 
-                    date = startDate;
-                }
-
-                var newData = allData[date.toISOString().slice(0, 10)];
-                var itemsWithNonZero = 0;
-                for (var i = 0; i < chart.data.length; i++) {
-                    chart.data[i].value = newData[i].value;
-                    if (chart.data[i].value > 0) {
-                        itemsWithNonZero++;
-                    }
-                }
-
-                if (date == startDate) {
-                    series.interpolationDuration = stepDuration / 4;
-                    valueAxis.rangeChangeDuration = stepDuration / 4;
-                }
-                else {
-                    series.interpolationDuration = stepDuration;
-                    valueAxis.rangeChangeDuration = stepDuration;
-                }
-
-                chart.invalidateRawData();
-                console.log("invalidating")
-                label.text = date.toISOString().slice(0, 10);
-
-                categoryAxis.zoom({ start: 0, end: itemsWithNonZero / categoryAxis.dataItems.length });
-            }
-
-            categoryAxis.sortBySeries = series;
-
-            chart.data = JSON.parse(JSON.stringify(allData[date.toISOString().slice(0, 10)]));
-            categoryAxis.zoom({ start: 0, end: 1 / chart.data.length });
-
-            series.events.on("inited", function () {
-                setTimeout(function () {
-                    playButton.isActive = true; // this starts interval
-                }, 1000)
-            })
-
-        });
-
-    },
     stock_comparing_values: function (chartdata, divid) {
 
         require([
             'amcharts4/core',
             'amcharts4/charts',
             'amcharts4/themes/animated',
-            'amcharts4/themes/amchartsdark'
-        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
+            'amcharts4/themes/moonrisekingdom'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_moonrisekingdom) {
 
                 am4core.useTheme(am4themes_animated)
-                am4core.useTheme(am4themes_amchartsdark);
+                am4core.useTheme(am4themes_moonrisekingdom);
 
                 function am4themes_mmTheme(target) {
                     if (target instanceof am4charts.LabelBullet) {
@@ -698,11 +502,11 @@ displaycharts = {
             'amcharts4/core',
             'amcharts4/charts',
             'amcharts4/themes/animated',
-            'amcharts4/themes/amchartsdark'
-        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
+            'amcharts4/themes/spiritedaway'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_spiritedaway) {
 
             am4core.useTheme(am4themes_animated);
-            am4core.useTheme(am4themes_amchartsdark);
+            am4core.useTheme(am4themes_spiritedaway);
 
             function am4themes_mmTheme(target) {
                 if (target instanceof am4charts.LabelBullet) {
@@ -714,7 +518,11 @@ displaycharts = {
                 if (target instanceof am4core.Tooltip) {
                     target.fontSize = 14;
                 }
+                if (target instanceof am4charts.Legend) {
+                    target.fontSize = 14;
+                }
             }
+
             am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
@@ -735,12 +543,10 @@ displaycharts = {
             var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
                 valueAxis.tooltip.disabled = true;
                 valueAxis.renderer.minWidth = 35;
-                
-                
                 valueAxis.renderer.line.strokeOpacity = 1;
                 valueAxis.renderer.line.strokeWidth = 2;
                 valueAxis.renderer.grid.template.strokeOpacity = 1;
-                
+               
                 valueAxis.renderer.grid.template.strokeWidth = 1;
 
             // create a line series for each set of data received
@@ -748,21 +554,19 @@ displaycharts = {
              var series = {};
 
              for (var seriesdata in chartdata) {
-
                  series[seriesdata] = chart.series.push(new am4charts.LineSeries());
                  series[seriesdata].data = chartdata[seriesdata];
                  series[seriesdata].dataFields.dateX = "date";
                  series[seriesdata].dataFields.valueY = "value";
                  series[seriesdata].name = seriesdata;
-                 console.log(series[seriesdata].dataItems);
                 }
 
             chart.legend = new am4charts.Legend();
             chart.legend.labels.template.text = "[normal {color}]{name}[/]";
 
-                //chart.cursor = new am4charts.XYCursor();
-                //chart.cursor.snapToSeries = series;
-                //chart.cursor.xAxis = dateAxis;
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.snapToSeries = series;
+            chart.cursor.xAxis = dateAxis;
 
                 //var scrollbarX = new am4charts.XYChartScrollbar();
                 //scrollbarX.series.push(['tjx']);
@@ -843,5 +647,201 @@ displaycharts = {
             });
 
         });
+    },
+    bar_chart_race: function (chartdata, divid) {
+
+        // The chart needs the chartdata to be:
+        //each dates set of data must be complete, no missing entries and they must be in the same order 
+        // the subject of the data must be called subject and the value called value
+
+        require([
+            'amcharts4/core',
+            'amcharts4/charts',
+            'amcharts4/themes/animated',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated, am4themes_amchartsdark) {
+
+            //TODO pass a meta data object to a chart that will set various variables to be used 
+            //representing the data being sent
+            //the value field is called value
+            //the subject is called subject
+
+            am4core.useTheme(am4themes_animated)
+            am4core.useTheme(am4themes_amchartsdark);
+
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 16;
+                }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 16;
+                }
+            }
+            am4core.useTheme(am4themes_mmTheme);
+
+            var chart = am4core.create(divid, am4charts.XYChart);
+            chart.padding(10, 10, 10, 10);
+
+            chart.numberFormatter.bigNumberPrefixes = [
+                { "number": 1e+3, "suffix": "K" },
+                { "number": 1e+6, "suffix": "M" },
+                { "number": 1e+9, "suffix": "B" }
+            ];
+
+            var label = chart.plotContainer.createChild(am4core.Label);
+            label.x = am4core.percent(97);
+            label.y = am4core.percent(95);
+            label.horizontalCenter = "right";
+            label.verticalCenter = "middle";
+            label.dx = -15;
+            label.fontSize = 20;
+            label.fill = am4core.color("rgb(255, 0, 0)");
+
+            var playButton = chart.plotContainer.createChild(am4core.PlayButton);
+            playButton.x = am4core.percent(97);
+            playButton.y = am4core.percent(95);
+            playButton.verticalCenter = "middle";
+            playButton.events.on("toggled", function (event) {
+                if (event.target.isActive) {
+                    play();
+                }
+                else {
+                    stop();
+                }
+            })
+
+            var stepDuration = 1000; // time between each different series display in milliseconds = 1000 = every second
+
+            var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
+            categoryAxis.renderer.grid.template.location = 0;
+            categoryAxis.dataFields.category = "subject";
+            categoryAxis.renderer.minGridDistance = 1;
+            categoryAxis.renderer.inversed = true;
+            categoryAxis.renderer.grid.template.disabled = true;
+
+            var valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
+            valueAxis.min = 0;
+            valueAxis.rangeChangeEasing = am4core.ease.linear;
+            valueAxis.rangeChangeDuration = stepDuration;
+            valueAxis.extraMax = 0.1;
+
+            var series = chart.series.push(new am4charts.ColumnSeries());
+            series.dataFields.categoryY = "subject";
+            series.dataFields.valueX = "value";
+            series.tooltipText = "{valueX.value}"
+            series.columns.template.strokeOpacity = 0;
+            series.columns.template.column.cornerRadiusBottomRight = 5;
+            series.columns.template.column.cornerRadiusTopRight = 5;
+            series.interpolationDuration = stepDuration;
+            series.interpolationEasing = am4core.ease.linear;
+
+            var labelBullet = series.bullets.push(new am4charts.LabelBullet())
+            labelBullet.label.horizontalCenter = "right";
+            labelBullet.label.text = "{values.valueX.workingValue.formatNumber('#.0as')}";
+            labelBullet.label.textAlign = "end";
+            labelBullet.label.dx = -10;
+
+            chart.zoomOutButton.disabled = true;
+
+            // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
+            series.columns.template.adapter.add("fill", function (fill, target) {
+                return chart.colors.getIndex(target.dataItem.index);
+            });
+
+            var allData = chartdata;
+            var startDate = null;
+
+            //find the minimum date
+
+            for (var date in allData) {
+                if (startDate == null) { startDate = new Date(date); }
+                startDate = new Date(Math.min(new Date(date), startDate));
+            }
+
+            //var date = new Date("2020-03-11");
+            //var startDate = date;
+
+            var date = startDate;
+            var endDate = new Date()
+            label.text = startDate.toISOString().slice(0, 10);
+
+            var interval;
+
+            ////use a nested settimeout with dynamic timing on each loop
+
+            function play() {
+                var delay = stepDuration;
+                interval = setTimeout(function run() {
+                    nextdate();
+                    delay = stepDuration;
+
+                    if (new Date(date.getTime() + (24 * 60 * 60 * 1000)) > endDate) { //add a 6 second timeout so the current view is held
+                        delay = 6000;
+                    }
+
+                    interval = setTimeout(run, delay);
+                }, delay);
+                nextdate();
+            }
+
+            //function play() {
+            //    interval = setInterval(function () {
+            //        nextdate();
+            //    }, stepDuration)
+            //    nextdate();
+            //}
+
+            function stop() {
+                if (interval) {
+                    clearInterval(interval);
+                }
+            }
+
+            function nextdate() {
+
+                date = new Date(date.getTime() + (24 * 60 * 60 * 1000))
+
+                if (date > endDate) {
+                    date = startDate;
+                }
+
+                var newData = allData[date.toISOString().slice(0, 10)];
+                var itemsWithNonZero = 0;
+                for (var i = 0; i < chart.data.length; i++) {
+                    chart.data[i].value = newData[i].value;
+                    if (chart.data[i].value > 0) {
+                        itemsWithNonZero++;
+                    }
+                }
+
+                if (date == startDate) {
+                    series.interpolationDuration = stepDuration / 4;
+                    valueAxis.rangeChangeDuration = stepDuration / 4;
+                }
+                else {
+                    series.interpolationDuration = stepDuration;
+                    valueAxis.rangeChangeDuration = stepDuration;
+                }
+
+                chart.invalidateRawData();
+                console.log("invalidating")
+                label.text = date.toISOString().slice(0, 10);
+
+                categoryAxis.zoom({ start: 0, end: itemsWithNonZero / categoryAxis.dataItems.length });
+            }
+
+            categoryAxis.sortBySeries = series;
+
+            chart.data = JSON.parse(JSON.stringify(allData[date.toISOString().slice(0, 10)]));
+            categoryAxis.zoom({ start: 0, end: 1 / chart.data.length });
+
+            series.events.on("inited", function () {
+                setTimeout(function () {
+                    playButton.isActive = true; // this starts interval
+                }, 1000)
+            })
+
+        });
+
     }
 }

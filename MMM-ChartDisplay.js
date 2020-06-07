@@ -7,13 +7,59 @@
  * MIT Licensed.
  */
 
-//todo merge multiple feeds based on keys (i.e. a linq join - omg - data will be provided from a data provider picking up a locaol data fgeed)
-//	#1 change the WHO coes from UK to GB etc
+//todo merge multiple feeds based on keys (i.e. a linq join - omg - data will be provided from a data provider picking up a local data feed)
+//	#1 change the WHO coes from UK to GB etc / DONE
 //  #2 add additional values into a set (i.e. setid:[{v1:1,v2:2v3:34,timestamp:blah}])
+//  
+//	will need the set rules to allow the merging process to largely raw data (retain the default sub,obj,val,tsmp) / rename fields
+//  data may need to be sorted into an order first amd match on entry by entry 
+//  add a multi key match option
+//
+//
+//	will require that the 
+//
+//
+//
+//
+//
+//  merge template	= the setids, wait for every setid before releasing to main module
+//					= merge rules, what is the merge key (setid.key) and the output data (setid. o/s/t/v)	
+//					= new output data format, setid. and also use whatever renames were applied, up to getting config correct
+//					= names have to be setid.name only way of differentiating the values
+//
+//					examples:
+//
+//
+//				merge {
+//					fileprocess: true/false					// if true will serialise all the data to disk and use file processing instead of in memory prior to building the ouput
+//					input: [setids]							// list of the setids to monitor/store/process
+//					sort: true/false						// use the matchkeys to sort each setid
+//					casesensitive:true/false				//sorting and matching is sensitive/insensitive to case
+//					matchkeys: [[setid.key,setid.key,..]]	// multiple key levels matching from left to right
+//															// key is the AKA name of a field, the first one will provide the setid.key in the output
+//															// the first key is king and everything must match that record by record or get discarded
+//					output: [setid.field,setid.field,setid.field,..] // will produce a [setid.key:{setid.filed,etc,etc}]
+//															// if left blank will copy over any field not present already in the ouput from the setid key/values
+//					
+//}
+
+
+//
+//template will take form of "setid".fieldname (i.e. "births".subject )
+//template: null							// TODO the output set template,
+			// setid will be replaced with the setid of the incoming data to merge
+			// a format "{'setid'.timestampformat:[{'setid'.subject,'setid'.value}]}"
+			// example: {test.timstampformat:[{test.subject,test.value}]}
+//
+//
+//
+//
+//
 //
 //todo add calculation in join (i.e. sum deaths / population)
 //todo always group and sum word input {setid:1,set:[{subject:uk,value:23},{subject:uk,value:233}]} merge and sum on uk
-//	mist be merged on the key value before
+//	must be merged on the key value before
+
 
 
 var startTime = new Date(); //use for getting elapsed times during debugging
@@ -82,11 +128,7 @@ Module.register("MMM-ChartDisplay", {
 			//add a template that represents the output format, includes types of enhanced set, set, item, combined subject
 			//field names are standard / not the renamed ones // handle in the code
 			outputsetid: null,						// the field name to be used as the setid, if null uses "1","2","3"
-			//template will take form of "setid".fieldname (i.e. "births".subject )
-			template: null							// TODO the output set template,
-			// setid will be replaced with the setid of the incoming data to merge
-			// a format "{'setid'.timestampformat:[{'setid'.subject,'setid'.value}]}"
-			// example: {test.timstampformat:[{test.subject,test.value}]}
+
 
 		},
 		charttype: null,                            // the type of chart prewritten and stored in displaycharts.js

@@ -57,6 +57,20 @@
                         return window.am4themes_amchartsdark;
                     }
                 },
+                'amcharts4/themes/spiritedaway': {
+                    deps: ['amcharts4/core'],
+                    exports: 'amcharts4/themes/spiritedaway',
+                    init: function () {
+                        return window.am4themes_spiritedaway;
+                    }
+                },
+                'amcharts4/themes/moonrisekingdom': {
+                    deps: ['amcharts4/core'],
+                    exports: 'amcharts4/themes/moonrisekingdom',
+                    init: function () {
+                        return window.am4themes_moonrisekingdom;
+                    }
+                },
                 'amcharts4/plugins/wordCloud': {
                     deps: ['amcharts4/core'],
                     exports: 'amcharts4/plugins/wordCloud',
