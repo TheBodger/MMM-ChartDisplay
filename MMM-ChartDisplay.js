@@ -35,9 +35,9 @@
 //					input: [setids]							// list of the setids to monitor/store/process
 //					sort: true/false						// use the matchkeys to sort each setid
 //					casesensitive:true/false				//sorting and matching is sensitive/insensitive to case
-//					matchkeys: [[setid.key,setid.key,..]]	// multiple key levels matching from left to right
-//															// key is the AKA name of a field, the first one will provide the setid.key in the output
-//															// the first key is king and everything must match that record by record or get discarded
+//					matchkeys: [setid.key, setid.key,..]	// multiple key levels matching/sorting from left to right
+//															// key is the AKA name of a field, the setid indicates the main match driver
+//															// the key name must be the same across all sets to sort/match
 //					output: [setid.field,setid.field,setid.field,..] // will produce a [setid.key:{setid.filed,etc,etc}]
 //															// if left blank will copy over any field not present already in the ouput from the setid key/values
 //					
@@ -128,8 +128,16 @@ Module.register("MMM-ChartDisplay", {
 			//add a template that represents the output format, includes types of enhanced set, set, item, combined subject
 			//field names are standard / not the renamed ones // handle in the code
 			outputsetid: null,						// the field name to be used as the setid, if null uses "1","2","3"
-
-
+        	fileprocess: false,						// if true will serialise all the data to disk and use file processing instead of in memory prior to building the ouput
+        	input: []	,							// list of the setids to monitor/store/process/merge
+        	sort: true	,							// use the matchkeys to sort each setid
+        	casesensitive:true	,					//sorting and matching is sensitive/insensitive to case
+        	matchkeys: []	,						// multiple key levels matching from left to right (setid.key, setid.key,..)
+        											// key is the AKA name of a field, the first one will provide the setid.key in the output
+        											// the first key is king and everything must match that record by record or get discarded
+        	output: null	,						// will produce a [setid.key:{setid.value,etc,etc}]
+        											// if left blank will copy over any field not present already in the ouput from the setid key/values
+        
 		},
 		charttype: null,                            // the type of chart prewritten and stored in displaycharts.js
 

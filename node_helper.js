@@ -26,6 +26,7 @@ var RSS = require('../MMM-FeedUtilities/RSS');
 
 const structures = require("../MMM-ChartUtilities/structures");
 const utilities = require("../MMM-ChartUtilities/common");
+const mergutils = new utilities.mergeutils();
 
 var commonutils = require('../MMM-FeedUtilities/utilities');
 
@@ -61,7 +62,10 @@ module.exports = NodeHelper.create({
 
 		this.consumerstorage[moduleinstance] = { config: config, feedstorage: {} };
 
-		
+		//init the mergutils utilities in case we are about to start merging data
+
+		mergutils.init(aconfig.config.merge);
+
 	},
 
 	processfeeds: function (newfeeds) {
@@ -200,7 +204,7 @@ module.exports = NodeHelper.create({
 					// dont add value as we dont equalise arrays on the value
 					if (groupingrules.equalisearrays && groupingrules.groupby != null && groupingrules.aggregate == null) {
 
-						if (groupingrules.groupby ='timestampformat') { //special case for grouping on timestamp
+						if (groupingrules.groupby = 'timestampformat') { //special case for grouping on timestamp
 							groupingrules['equalisearraykeys'] = [newitem.subjectname, 'timestampformat', newitem.objectname];
 						}
 						else {
@@ -210,7 +214,7 @@ module.exports = NodeHelper.create({
 
 					if (reformatrules.timestampformat != null) {
 						newitem.timestampformat = moment(item.timestamp).format(reformatrules.timestampformat)
-						if (reformatrules.timestampformat.toLowerCase() == "x") { newitem.timestampformat = parseInt(newitem.timestampformat) ;}
+						if (reformatrules.timestampformat.toLowerCase() == "x") { newitem.timestampformat = parseInt(newitem.timestampformat); }
 					}
 
 					if (reformatrules.dropkey != null) { //this should be an array
@@ -242,7 +246,8 @@ module.exports = NodeHelper.create({
 
 		var processreferences = true;
 
-		if (referencerules.length == 0) {processreferences = false;
+		if (referencerules.length == 0) {
+			processreferences = false;
 		}
 		else {
 			referencerules.forEach(function (reference, index) {
@@ -260,7 +265,7 @@ module.exports = NodeHelper.create({
 					}
 					else {
 						referencerules[index]['referencedata'] = input;
-					
+
 					}
 				}
 			})
@@ -298,100 +303,17 @@ module.exports = NodeHelper.create({
 		}
 
 		// -------------------------------------- aggregator merge stage with template  ------------------------------------------
+		// if merging is to take place, then each set is stored here until all sets have been received
+		// how the hell do we know ? , because the config tells us the setids to look for
+		// phew
 
-		//we have to group the data together now using the groupby key 
-		//as the grouping 
-		//and also prepare the data to be merged in the final step using the template
+		var chartdata = {}; //ready to go for this particular chart requirement
 
-		if (groupingrules.groupby != null) { //if not set then we just process the items straight into the merge step
-
-			//clear the grouping so we can start afresh
-
-			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = [];
-
-			// see the file usingLinq.md
-
-			//the following groupby also renames the fields so at the end of the group by everything is okdokey
-
-			//remove the groupby from the list of equalisers
-			//which of course might be timestampformat; 
-
-			if (groupingrules['equalisearraykeys'] != null) {
-				groupingrules['equalisearraykeys'] = groupingrules['equalisearraykeys'].filter(function (e) { return e !== groupingrules.groupby });
-			}
-
-			//hopefully we are now at only one entry in the equaliser set.
-
-			var keySelector = "{key : $." + groupingrules.groupby + "}"
-			var elementSelector = '{';
-
-			//use the first stored item as a list of all the data we need to keep after grouping
-
-			var tempitem = items[0];
-
-			var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to be matched string
-
-			if (groupingrules.groupby.startsWith("timestamp")) { ignorekeysstarting = "timestamp" }
-
-			for (var key in tempitem) {
-
-				if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) {
-
-					if (reformatrules.timestampformat != null && key == "timestamp") {
-						elementSelector = elementSelector + tempitem[key + "name"] + ": $." + 'timestampformat' + ",";
-					}
-					else {
-						elementSelector = elementSelector + tempitem[key + "name"] + ": $." + key + ",";
-					}
-				}
-				
-			}
-
-			elementSelector = elementSelector + '}';
-
-			var resultSelector = "{ key : $.key, values : $$.toArray() }"
-			var compareSelector = "String($.key)"
-
-			if (groupingrules.aggregate == null) {
-
-				var groupeddata = linq.from(items)
-					.groupBy(
-						keySelector,
-						elementSelector,
-						resultSelector,
-						compareSelector
-					)
-					.toArray();
-			}
-
-			else {
-
-				//use the defined valuename in the selection, as we can only aggregate on the value (even though a timestamp can be also aggregated)
-				//if there is need to aggregate a timestamp then the value must equal the timestamp
-
-				var resultSelector = "{ key : $.key, " + tempitem["valuename"] + " : $$." + groupingrules.aggregate + "('$.value') }"
-
-				var groupeddata = linq.from(items)
-					.groupBy(
-						keySelector,
-						null,
-						resultSelector,
-						compareSelector
-					)
-					.toArray();
-			}
-
-			//// we now have all the data with the correct names, so we have to reverse back into the data
-			//// to apply the drop values rules if it exists
-
-			//post process into the grouped items array
-
-			self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = groupeddata;
-
-		}
-		else {
+		if (this.consumerstorage[moduleinstance].config.merge.input != null) {
 
 			//we have to complete the rename and drop unwanted stuff here 
+
+			var tempitems = [];
 
 			items.forEach(function (item) {
 
@@ -402,176 +324,306 @@ module.exports = NodeHelper.create({
 						if (reformatrules.timestampformat != null && key == "timestamp") {
 							tempitem[item[key + "name"]] = item['timestampformat'];
 						}
-					else{
-						tempitem[item[key + "name"]] = item[key];
+						else {
+							tempitem[item[key + "name"]] = item[key];
 						}
 					}
 				}
 
-				self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems.push(tempitem);
+				tempitems.push(tempitem);
 			});
 
+			items = [];
+
+			mergutils.storeset(setid, tempitems);
+
+			if (mergutils.storedsetids().length == this.consumerstorage[moduleinstance].config.merge.input.length) {
+
+				console.log(mergutils.mergesets());
+
+				//chartdata[setid] = { items: mergutils.mergesets() };
+
+				this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata: mergutils.mergesets()} });
+			}
 		}
 
-		// ----------------------------------- merge step -------------------------------------
-		//TODO merge disparate data based on a template //may need to NOT lose the names until here so we can merge correctly
-		// ------------------------------------------------------------------------------------
+		else
 
-		var chartdata = {}; //ready to go for this particular chart requirement
-		var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
-
-		if (groupingrules.groupby != null) {
-
-			//if grouping by, we need to build a pseudo set: from multiple values in an array
-
-			//before we start we can resort the results so far so that we can control the data going into the array equaliser step
-
-			if (groupingrules.resort) {
-
-				groupdata.sort
-					(function (a, b) {
-						var x = a["key"]
-						var y = b["key"]
-						if (x < y) { return -1; }
-						if (x > y) { return 1; }
-						return 0;
-					}); 
+		{
+			//not merging do all the not merging stuff
 
 
-            }
+			// -----------------------------------------------------------------------------------------------------------------------
 
-			//for time being we drop any items in the array not matching the value filter rule
-			//if all values are dropped from an item, then that item is dropped
-			//be aware that some charts expect to see all possible values in each set, so this may negatively impact the chart appearance
-			//be aware that the chartdata could be empty at the end of this!!
+			//we have to group the data together now using the groupby key 
+			//as the grouping 
 
-			if (groupingrules.aggregate == null) {
 
-				for (var gidx = 0; gidx < groupdata.length; gidx++) {
+			if (groupingrules.groupby != null) { //if not set then we just process the items straight into the merge step
 
-					chartdata[groupdata[gidx].key] = [];
+				//clear the grouping so we can start afresh
 
-					var aidx = 0;
-					groupdata[gidx].values.forEach(function (item) {
+				self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = [];
 
-						if ((filterrules.dropvalues != null && item[filterrules.filtervaluename] > filterrules.dropvalues) || filterrules.dropvalues == null) {
-							chartdata[groupdata[gidx].key][aidx] = item;
-							aidx++;
-						}
-					});
+				// see the file usingLinq.md
 
-					if (filterrules.dropvalues != null && chartdata[groupdata[gidx].key].length == 0) {
-						delete chartdata[groupdata[gidx].key];
-					}
+				//the following groupby also renames the fields so at the end of the group by everything is okdokey
 
-					if (filterrules.warnonarraysunequal && gidx > 0 && chartdata[groupdata[gidx].key].length != chartdata[groupdata[gidx - 1].key].length) {
+				//remove the groupby from the list of equalisers
+				//which of course might be timestampformat; 
 
-						console.error("The output arrays are of different length");
-						if (gidx == 1 && chartdata[groupdata[gidx].key].length > chartdata[groupdata[gidx - 1].key].length) {
-							console.error("The first entry in the array is not complete", groupdata[gidx - 1].key,JSON.stringify(chartdata[groupdata[gidx - 1].key]));
-						}
-
-						//try to equalise the array entries because of the mismatch
-						//the equaliser array contains the key value to match the array entries on
-						//if more that one key is present then we have to abort the try
-
-						if (groupingrules['equalisearraykeys'] != null) {
-							if (groupingrules['equalisearraykeys'].length > 1) {
-								console.error("Multiple entries in the equaliser set, only works when one is present");
-							}
-						else { // merge the missing entries from the longer set to the shorter set //assumes that the first set is complete
-
-							var arrayOne = chartdata[groupdata[gidx].key];
-							var arrayTwo = chartdata[groupdata[gidx - 1].key];
-							var matchingkeyname = groupingrules['equalisearraykeys'][0];
-
-							const results1 = arrayOne.filter(({ [matchingkeyname]: id1 }) => !arrayTwo.some(({ [matchingkeyname]: id2 }) => id2 === id1));
-							const results2 = arrayTwo.filter(({ [matchingkeyname]: id1 }) => !arrayOne.some(({ [matchingkeyname]: id2 }) => id2 === id1));
-
-							chartdata[groupdata[gidx].key] = [...arrayOne, ...results2];
-							chartdata[groupdata[gidx - 1].key] = [...arrayTwo, ...results1];
-
-							console.info("Found the Differences" + JSON.stringify(results1) + " missing from previous entry and this is missing from the current entry" + JSON.stringify(results2));
-
-							//TODO we probably need the sort to occur just before the chartdata is sent so that all data sets are in the same order
-							//this sort assumes that all unchanged arrays are in ascending key order
-							//and finally need to sort the arrays so they are all in the same order!!
-							//we have to do it here as there can be retrospectives changes to array entries
-
-							//here sort the arrays depending on any changes found
-
-								if (results2.length > 0) {
-
-									chartdata[groupdata[gidx].key].sort
-										(function (a, b) {
-											//var x = a.type.toLowerCase();
-											//var y = b.type.toLowerCase();
-											var x = a[matchingkeyname]
-											var y = b[matchingkeyname]
-											if (x < y) { return -1; }
-											if (x > y) { return 1; }
-											return 0;
-										}); 
-								}
-
-								if (results1.length > 0) {
-									chartdata[groupdata[gidx - 1].key].sort
-										(function (a, b) {
-											//var x = a.type.toLowerCase();
-											//var y = b.type.toLowerCase();
-											var x = a[matchingkeyname]
-											var y = b[matchingkeyname]
-											if (x < y) { return -1; }
-											if (x > y) { return 1; }
-											return 0;
-										});
-								}
-								//console.info("Resorted arrays");
-							}
-						}
-					}
+				if (groupingrules['equalisearraykeys'] != null) {
+					groupingrules['equalisearraykeys'] = groupingrules['equalisearraykeys'].filter(function (e) { return e !== groupingrules.groupby });
 				}
+
+				//hopefully we are now at only one entry in the equaliser set.
+
+				var keySelector = "{key : $." + groupingrules.groupby + "}"
+				var elementSelector = '{';
+
+				//use the first stored item as a list of all the data we need to keep after grouping
+
+				var tempitem = items[0];
+
+				var ignorekeysstarting = "afngalkdhfgodhfgoadfg"; //random never to be matched string
+
+				if (groupingrules.groupby.startsWith("timestamp")) { ignorekeysstarting = "timestamp" }
+
+				for (var key in tempitem) {
+
+					if (tempitem[key + "name"] != null && key != groupingrules.groupby && !key.startsWith(ignorekeysstarting)) {
+
+						if (reformatrules.timestampformat != null && key == "timestamp") {
+							elementSelector = elementSelector + tempitem[key + "name"] + ": $." + 'timestampformat' + ",";
+						}
+						else {
+							elementSelector = elementSelector + tempitem[key + "name"] + ": $." + key + ",";
+						}
+					}
+				
+				}
+
+				elementSelector = elementSelector + '}';
+
+				var resultSelector = "{ key : $.key, values : $$.toArray() }"
+				var compareSelector = "String($.key)"
+
+				if (groupingrules.aggregate == null) {
+
+					var groupeddata = linq.from(items)
+						.groupBy(
+							keySelector,
+							elementSelector,
+							resultSelector,
+							compareSelector
+						)
+						.toArray();
+				}
+
+				else {
+
+					//use the defined valuename in the selection, as we can only aggregate on the value (even though a timestamp can be also aggregated)
+					//if there is need to aggregate a timestamp then the value must equal the timestamp
+
+					var resultSelector = "{ key : $.key, " + tempitem["valuename"] + " : $$." + groupingrules.aggregate + "('$.value') }"
+
+					var groupeddata = linq.from(items)
+						.groupBy(
+							keySelector,
+							null,
+							resultSelector,
+							compareSelector
+						)
+						.toArray();
+				}
+
+				//// we now have all the data with the correct names, so we have to reverse back into the data
+				//// to apply the drop values rules if it exists
+
+				//post process into the grouped items array
+
+				self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems = groupeddata;
+
 			}
 			else {
 
-				//if grouping by, we need to build a pseudo set: from a single value because we did an aggregate
+				//we have to complete the rename and drop unwanted stuff here 
 
-				//for time being we will drop any values less than the filter, we use the 
-				//filterrules.filtervaluename field key name
-				//in this version as there will ever be one value, because we grouped and aggregated, we just ignore the item altogether
+				items.forEach(function (item) {
 
-				for (var gidx = 0; gidx < groupdata.length; gidx++) {
+					var tempitem = {};
 
-					if ((filterrules.dropvalues != null && groupdata[gidx][filterrules.filtervaluename] > filterrules.dropvalues) || filterrules.dropvalues == null) {
+					for (var key in item) {
+						if (item[key + "name"] != null) {
+							if (reformatrules.timestampformat != null && key == "timestamp") {
+								tempitem[item[key + "name"]] = item['timestampformat'];
+							}
+						else{
+							tempitem[item[key + "name"]] = item[key];
+							}
+						}
+					}
+
+					self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems.push(tempitem);
+				});
+
+			}
+
+			var groupdata = self.consumerstorage[moduleinstance].feedstorage[feedstorekey].feedsets[setid].groupeditems;
+
+			if (groupingrules.groupby != null) {
+
+				//if grouping by, we need to build a pseudo set: from multiple values in an array
+
+				//before we start we can resort the results so far so that we can control the data going into the array equaliser step
+
+				if (groupingrules.resort) {
+
+					groupdata.sort
+						(function (a, b) {
+							var x = a["key"]
+							var y = b["key"]
+							if (x < y) { return -1; }
+							if (x > y) { return 1; }
+							return 0;
+						}); 
+
+
+				}
+
+				//for time being we drop any items in the array not matching the value filter rule
+				//if all values are dropped from an item, then that item is dropped
+				//be aware that some charts expect to see all possible values in each set, so this may negatively impact the chart appearance
+				//be aware that the chartdata could be empty at the end of this!!
+
+				if (groupingrules.aggregate == null) {
+
+					for (var gidx = 0; gidx < groupdata.length; gidx++) {
 
 						chartdata[groupdata[gidx].key] = [];
-						chartdata[groupdata[gidx].key][0] = {};
 
-						//as we have grouped by and aggregated the data is in a different format and we add each datapoint we find
-						//into the array keyed on the key of that aggregated field
+						var aidx = 0;
+						groupdata[gidx].values.forEach(function (item) {
 
-						for (var key in groupdata[gidx]) {
-							if (key != 'key') {
-								chartdata[groupdata[gidx].key][0][key] = groupdata[gidx][key];
-							};
+							if ((filterrules.dropvalues != null && item[filterrules.filtervaluename] > filterrules.dropvalues) || filterrules.dropvalues == null) {
+								chartdata[groupdata[gidx].key][aidx] = item;
+								aidx++;
+							}
+						});
+
+						if (filterrules.dropvalues != null && chartdata[groupdata[gidx].key].length == 0) {
+							delete chartdata[groupdata[gidx].key];
+						}
+
+						if (filterrules.warnonarraysunequal && gidx > 0 && chartdata[groupdata[gidx].key].length != chartdata[groupdata[gidx - 1].key].length) {
+
+							console.error("The output arrays are of different length");
+							if (gidx == 1 && chartdata[groupdata[gidx].key].length > chartdata[groupdata[gidx - 1].key].length) {
+								console.error("The first entry in the array is not complete", groupdata[gidx - 1].key,JSON.stringify(chartdata[groupdata[gidx - 1].key]));
+							}
+
+							//try to equalise the array entries because of the mismatch
+							//the equaliser array contains the key value to match the array entries on
+							//if more that one key is present then we have to abort the try
+
+							if (groupingrules['equalisearraykeys'] != null) {
+								if (groupingrules['equalisearraykeys'].length > 1) {
+									console.error("Multiple entries in the equaliser set, only works when one is present");
+								}
+							else { // merge the missing entries from the longer set to the shorter set //assumes that the first set is complete
+
+								var arrayOne = chartdata[groupdata[gidx].key];
+								var arrayTwo = chartdata[groupdata[gidx - 1].key];
+								var matchingkeyname = groupingrules['equalisearraykeys'][0];
+
+								const results1 = arrayOne.filter(({ [matchingkeyname]: id1 }) => !arrayTwo.some(({ [matchingkeyname]: id2 }) => id2 === id1));
+								const results2 = arrayTwo.filter(({ [matchingkeyname]: id1 }) => !arrayOne.some(({ [matchingkeyname]: id2 }) => id2 === id1));
+
+								chartdata[groupdata[gidx].key] = [...arrayOne, ...results2];
+								chartdata[groupdata[gidx - 1].key] = [...arrayTwo, ...results1];
+
+								console.info("Found the Differences" + JSON.stringify(results1) + " missing from previous entry and this is missing from the current entry" + JSON.stringify(results2));
+
+								//TODO we probably need the sort to occur just before the chartdata is sent so that all data sets are in the same order
+								//this sort assumes that all unchanged arrays are in ascending key order
+								//and finally need to sort the arrays so they are all in the same order!!
+								//we have to do it here as there can be retrospectives changes to array entries
+
+								//here sort the arrays depending on any changes found
+
+									if (results2.length > 0) {
+
+										chartdata[groupdata[gidx].key].sort
+											(function (a, b) {
+												//var x = a.type.toLowerCase();
+												//var y = b.type.toLowerCase();
+												var x = a[matchingkeyname]
+												var y = b[matchingkeyname]
+												if (x < y) { return -1; }
+												if (x > y) { return 1; }
+												return 0;
+											}); 
+									}
+
+									if (results1.length > 0) {
+										chartdata[groupdata[gidx - 1].key].sort
+											(function (a, b) {
+												//var x = a.type.toLowerCase();
+												//var y = b.type.toLowerCase();
+												var x = a[matchingkeyname]
+												var y = b[matchingkeyname]
+												if (x < y) { return -1; }
+												if (x > y) { return 1; }
+												return 0;
+											});
+									}
+									//console.info("Resorted arrays");
+								}
+							}
 						}
 					}
 				}
+				else {
+
+					//if grouping by, we need to build a pseudo set: from a single value because we did an aggregate
+
+					//for time being we will drop any values less than the filter, we use the 
+					//filterrules.filtervaluename field key name
+					//in this version as there will ever be one value, because we grouped and aggregated, we just ignore the item altogether
+
+					for (var gidx = 0; gidx < groupdata.length; gidx++) {
+
+						if ((filterrules.dropvalues != null && groupdata[gidx][filterrules.filtervaluename] > filterrules.dropvalues) || filterrules.dropvalues == null) {
+
+							chartdata[groupdata[gidx].key] = [];
+							chartdata[groupdata[gidx].key][0] = {};
+
+							//as we have grouped by and aggregated the data is in a different format and we add each datapoint we find
+							//into the array keyed on the key of that aggregated field
+
+							for (var key in groupdata[gidx]) {
+								if (key != 'key') {
+									chartdata[groupdata[gidx].key][0][key] = groupdata[gidx][key];
+								};
+							}
+						}
+					}
+				}
+
+			}
+			else {  // no grouping end up with simple array of items within a setid witch could be a stock name as part of an array of stocks
+
+				chartdata[setid] = {items: groupdata};
+
 			}
 
-		}
-		else {  // no grouping end up with simple array of items within a setid witch could be a stock name as part of an array of stocks
+			// -------------------------------------- aggregator send stage  ------------------------------------------
 
-			chartdata[setid] = {items: groupdata};
+			this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata: chartdata } });
 
-        }
-
-		// -------------------------------------- aggregator send stage  ------------------------------------------
-
-		this.sendNotificationToMasterModule("NEW_FEEDS_" + moduleinstance, { payload: { chartdata: chartdata } });
-
-		if (this.consumerstorage[moduleinstance].config.filename != null) {
-			JSONutils.putJSON("./" + this.consumerstorage[moduleinstance].config.filename, chartdata);
+			if (this.consumerstorage[moduleinstance].config.filename != null) { //store the data to disk
+				JSONutils.putJSON("./" + this.consumerstorage[moduleinstance].config.filename, chartdata);
+			}
 		}
 
 	},

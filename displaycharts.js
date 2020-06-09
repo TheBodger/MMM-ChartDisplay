@@ -16,6 +16,7 @@
 //simple_bar_chart: //example of creating a bespoke theme to adjust settings and use of a amchart colour theme
 //simple_line_chart:
 //stock_comparing_values:
+//stock_analysis:
 
 /*
  * ---------------------------------------
@@ -88,7 +89,7 @@ displaycharts = {
 
             series.data = [];
 
-            for (var key in chartdata) { series.data.push({ tag: key, count: chartdata[key][0].count }) ;}
+            for (var key in chartdata) { series.data.push({ tag: key, count: chartdata[key][0].count }); }
 
             series.dataFields.word = "tag";
             series.dataFields.value = "count";
@@ -130,207 +131,207 @@ displaycharts = {
             'amcharts4/themes/amchartsdark'
         ], function (am4core, am4themes_animated, am4maps, am4geodata_worldLow, am4themes_amchartsdark) {
 
-                am4core.useTheme(am4themes_animated);
-                am4core.useTheme(am4themes_amchartsdark);
+            am4core.useTheme(am4themes_animated);
+            am4core.useTheme(am4themes_amchartsdark);
 
-                function am4themes_mmTheme(target) {
-                    if (target instanceof am4charts.LabelBullet) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4charts.AxisRenderer) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4core.Tooltip) {
-                        target.fontSize = 14;
-                    }
-
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.LabelBullet) {
+                    target.fontSize = 14;
                 }
-                am4core.useTheme(am4themes_mmTheme);
-
-                // Create chart instance
-                var chart = am4core.create(divid, am4maps.MapChart);
-                var interfaceColors = new am4core.InterfaceColorSet();
-
-                // Check if proper geodata is loaded
-                try {
-                    chart.geodata = am4geodata_worldLow;
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 14;
                 }
-                catch (e) {
-                    chart.raiseCriticalError(new Error("Map geodata could not be loaded. Please download the latest <a href=\"https://www.amcharts.com/download/download-v4/\">amcharts geodata</a> and extract its contents into the same directory as your amCharts files."));
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 14;
                 }
 
-                var label = chart.createChild(am4core.Label)
-                label.text = "Reported Covid19 Deaths yesterday. \n Bullet size uses logarithmic scale. \n Data: World Health Organization etc";
-                label.fontSize = 12;
-                label.align = "left";
-                label.valign = "bottom"
-                label.fill = am4core.color("#927459");
-                label.background = new am4core.RoundedRectangle()
-                label.background.cornerRadius(10, 10, 10, 10);
-                label.padding(10, 10, 10, 10);
-                label.marginLeft = 30;
-                label.marginBottom = 30;
-                label.background.strokeOpacity = 0.3;
-                label.background.stroke = am4core.color("#927459");
-                label.background.fill = am4core.color("#f9e3ce");
-                label.background.fillOpacity = 0.6;
+            }
+            am4core.useTheme(am4themes_mmTheme);
 
-                // Set projection
-                chart.projection = new am4maps.projections.Orthographic();
-                chart.panBehavior = "rotateLongLat";
-                chart.padding(10, 10, 10, 10);
+            // Create chart instance
+            var chart = am4core.create(divid, am4maps.MapChart);
+            var interfaceColors = new am4core.InterfaceColorSet();
 
-                // Add zoom control
-                chart.zoomControl = new am4maps.ZoomControl();
-                chart.seriesContainer.cursorOverStyle = am4core.MouseCursorStyle.grab;
-                chart.seriesContainer.cursorDownStyle = am4core.MouseCursorStyle.grabbing;
+            // Check if proper geodata is loaded
+            try {
+                chart.geodata = am4geodata_worldLow;
+            }
+            catch (e) {
+                chart.raiseCriticalError(new Error("Map geodata could not be loaded. Please download the latest <a href=\"https://www.amcharts.com/download/download-v4/\">amcharts geodata</a> and extract its contents into the same directory as your amCharts files."));
+            }
 
-                var homeButton = new am4core.Button();
-                homeButton.events.on("hit", function () {
-                    chart.goHome();
-                });
+            var label = chart.createChild(am4core.Label)
+            label.text = "Reported Covid19 Deaths yesterday. \n Bullet size uses logarithmic scale. \n Data: World Health Organization etc";
+            label.fontSize = 12;
+            label.align = "left";
+            label.valign = "bottom"
+            label.fill = am4core.color("#927459");
+            label.background = new am4core.RoundedRectangle()
+            label.background.cornerRadius(10, 10, 10, 10);
+            label.padding(10, 10, 10, 10);
+            label.marginLeft = 30;
+            label.marginBottom = 30;
+            label.background.strokeOpacity = 0.3;
+            label.background.stroke = am4core.color("#927459");
+            label.background.fill = am4core.color("#f9e3ce");
+            label.background.fillOpacity = 0.6;
 
-                homeButton.icon = new am4core.Sprite();
-                homeButton.padding(7, 5, 7, 5);
-                homeButton.width = 30;
-                homeButton.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
-                homeButton.marginBottom = 10;
-                homeButton.parent = chart.zoomControl;
-                homeButton.insertBefore(chart.zoomControl.plusButton);
+            // Set projection
+            chart.projection = new am4maps.projections.Orthographic();
+            chart.panBehavior = "rotateLongLat";
+            chart.padding(10, 10, 10, 10);
 
-                chart.backgroundSeries.mapPolygons.template.polygon.fill = am4core.color("#bfa58d");
-                chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
+            // Add zoom control
+            chart.zoomControl = new am4maps.ZoomControl();
+            chart.seriesContainer.cursorOverStyle = am4core.MouseCursorStyle.grab;
+            chart.seriesContainer.cursorDownStyle = am4core.MouseCursorStyle.grabbing;
 
+            var homeButton = new am4core.Button();
+            homeButton.events.on("hit", function () {
+                chart.goHome();
+            });
 
-                //// Create map polygon series
+            homeButton.icon = new am4core.Sprite();
+            homeButton.padding(7, 5, 7, 5);
+            homeButton.width = 30;
+            homeButton.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
+            homeButton.marginBottom = 10;
+            homeButton.parent = chart.zoomControl;
+            homeButton.insertBefore(chart.zoomControl.plusButton);
 
-                //var shadowPolygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
-                //shadowPolygonSeries.geodata = am4geodata_continentsLow;
-
-                //try {
-                //    shadowPolygonSeries.geodata = am4geodata_continentsLow;
-                //}
-                //catch (e) {
-                //    shadowPolygonSeries.raiseCriticalError(new Error("Map geodata could not be loaded. Please download the latest <a href=\"https://www.amcharts.com/download/download-v4/\">amcharts geodata</a> and extract its contents into the same directory as your amCharts files."));
-                //}
-
-                //shadowPolygonSeries.useGeodata = true;
-                //shadowPolygonSeries.dx = 2;
-                //shadowPolygonSeries.dy = 2;
-                //shadowPolygonSeries.mapPolygons.template.fill = am4core.color("#000");
-                //shadowPolygonSeries.mapPolygons.template.fillOpacity = 0.2;
-                //shadowPolygonSeries.mapPolygons.template.strokeOpacity = 0;
-                //shadowPolygonSeries.fillOpacity = 0.1;
-                //shadowPolygonSeries.fill = am4core.color("#000");
+            chart.backgroundSeries.mapPolygons.template.polygon.fill = am4core.color("#bfa58d");
+            chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
 
 
-                // Create map polygon series
-                var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
-                polygonSeries.useGeodata = true;
+            //// Create map polygon series
 
-                polygonSeries.calculateVisualCenter = true;
-                polygonSeries.tooltip.background.fillOpacity = 0.2;
-                polygonSeries.tooltip.background.cornerRadius = 20;
+            //var shadowPolygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+            //shadowPolygonSeries.geodata = am4geodata_continentsLow;
 
-                var template = polygonSeries.mapPolygons.template;
-                template.nonScalingStroke = true;
-                template.fill = am4core.color("#f9e3ce");
-                template.stroke = am4core.color("#e2c9b0");
+            //try {
+            //    shadowPolygonSeries.geodata = am4geodata_continentsLow;
+            //}
+            //catch (e) {
+            //    shadowPolygonSeries.raiseCriticalError(new Error("Map geodata could not be loaded. Please download the latest <a href=\"https://www.amcharts.com/download/download-v4/\">amcharts geodata</a> and extract its contents into the same directory as your amCharts files."));
+            //}
 
-                polygonSeries.calculateVisualCenter = true;
-                template.propertyFields.id = "id";
-                template.tooltipPosition = "fixed";
-                template.fillOpacity = 1;
-
-                template.events.on("over", function (event) {
-                    if (event.target.dummyData) {
-                        event.target.dummyData.isHover = true;
-                    }
-                })
-                template.events.on("out", function (event) {
-                    if (event.target.dummyData) {
-                        event.target.dummyData.isHover = false;
-                    }
-                })
-
-                var hs = polygonSeries.mapPolygons.template.states.create("hover");
-                hs.properties.fillOpacity = 1;
-                hs.properties.fill = am4core.color("#deb7ad");
+            //shadowPolygonSeries.useGeodata = true;
+            //shadowPolygonSeries.dx = 2;
+            //shadowPolygonSeries.dy = 2;
+            //shadowPolygonSeries.mapPolygons.template.fill = am4core.color("#000");
+            //shadowPolygonSeries.mapPolygons.template.fillOpacity = 0.2;
+            //shadowPolygonSeries.mapPolygons.template.strokeOpacity = 0;
+            //shadowPolygonSeries.fillOpacity = 0.1;
+            //shadowPolygonSeries.fill = am4core.color("#000");
 
 
-                var graticuleSeries = chart.series.push(new am4maps.GraticuleSeries());
-                graticuleSeries.mapLines.template.stroke = am4core.color("#fff");
-                graticuleSeries.fitExtent = false;
-                graticuleSeries.mapLines.template.strokeOpacity = 0.2;
-                graticuleSeries.mapLines.template.stroke = am4core.color("#fff");
+            // Create map polygon series
+            var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+            polygonSeries.useGeodata = true;
+
+            polygonSeries.calculateVisualCenter = true;
+            polygonSeries.tooltip.background.fillOpacity = 0.2;
+            polygonSeries.tooltip.background.cornerRadius = 20;
+
+            var template = polygonSeries.mapPolygons.template;
+            template.nonScalingStroke = true;
+            template.fill = am4core.color("#f9e3ce");
+            template.stroke = am4core.color("#e2c9b0");
+
+            polygonSeries.calculateVisualCenter = true;
+            template.propertyFields.id = "id";
+            template.tooltipPosition = "fixed";
+            template.fillOpacity = 1;
+
+            template.events.on("over", function (event) {
+                if (event.target.dummyData) {
+                    event.target.dummyData.isHover = true;
+                }
+            })
+            template.events.on("out", function (event) {
+                if (event.target.dummyData) {
+                    event.target.dummyData.isHover = false;
+                }
+            })
+
+            var hs = polygonSeries.mapPolygons.template.states.create("hover");
+            hs.properties.fillOpacity = 1;
+            hs.properties.fill = am4core.color("#deb7ad");
 
 
-                var measelsSeries = chart.series.push(new am4maps.MapPolygonSeries())
-                measelsSeries.tooltip.background.fillOpacity = 0;
-                measelsSeries.tooltip.background.cornerRadius = 20;
-                measelsSeries.tooltip.autoTextColor = false;
-                measelsSeries.tooltip.label.fill = am4core.color("#000");
-                measelsSeries.tooltip.dy = -5;
+            var graticuleSeries = chart.series.push(new am4maps.GraticuleSeries());
+            graticuleSeries.mapLines.template.stroke = am4core.color("#fff");
+            graticuleSeries.fitExtent = false;
+            graticuleSeries.mapLines.template.strokeOpacity = 0.2;
+            graticuleSeries.mapLines.template.stroke = am4core.color("#fff");
 
-                var measelTemplate = measelsSeries.mapPolygons.template;
-                measelTemplate.fill = am4core.color("#bf7569");
-                measelTemplate.strokeOpacity = 0;
-                measelTemplate.fillOpacity = 0.75;
-                measelTemplate.tooltipPosition = "fixed";
 
-                var hs2 = measelsSeries.mapPolygons.template.states.create("hover");
-                hs2.properties.fillOpacity = 1;
-                hs2.properties.fill = am4core.color("#86240c");
+            var measelsSeries = chart.series.push(new am4maps.MapPolygonSeries())
+            measelsSeries.tooltip.background.fillOpacity = 0;
+            measelsSeries.tooltip.background.cornerRadius = 20;
+            measelsSeries.tooltip.autoTextColor = false;
+            measelsSeries.tooltip.label.fill = am4core.color("#000");
+            measelsSeries.tooltip.dy = -5;
 
-                polygonSeries.events.on("inited", function () {
-                    polygonSeries.mapPolygons.each(function (mapPolygon) {
-                        console.log(mapPolygon.id);
-                        
-                        if (data[mapPolygon.id]!=null) {
-                            var count = data[mapPolygon.id][0].count;
-                            if (count > 0) {
-                                var polygon = measelsSeries.mapPolygons.create();
-                                polygon.multiPolygon = am4maps.getCircle(mapPolygon.visualLongitude, mapPolygon.visualLatitude, Math.max(0.2, Math.log(count) * Math.LN10 / 10));
-                                polygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": " + count;
+            var measelTemplate = measelsSeries.mapPolygons.template;
+            measelTemplate.fill = am4core.color("#bf7569");
+            measelTemplate.strokeOpacity = 0;
+            measelTemplate.fillOpacity = 0.75;
+            measelTemplate.tooltipPosition = "fixed";
 
-                                mapPolygon.dummyData = polygon;
-                                polygon.events.on("over", function () {
-                                    mapPolygon.isHover = true;
-                                })
-                                polygon.events.on("out", function () {
-                                    mapPolygon.isHover = false;
-                                })
-                            }
-                            else {
-                                mapPolygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": no data";
-                                mapPolygon.fillOpacity = 0.9;
-                            }
+            var hs2 = measelsSeries.mapPolygons.template.states.create("hover");
+            hs2.properties.fillOpacity = 1;
+            hs2.properties.fill = am4core.color("#86240c");
+
+            polygonSeries.events.on("inited", function () {
+                polygonSeries.mapPolygons.each(function (mapPolygon) {
+                    console.log(mapPolygon.id);
+
+                    if (data[mapPolygon.id] != null) {
+                        var count = data[mapPolygon.id][0].count;
+                        if (count > 0) {
+                            var polygon = measelsSeries.mapPolygons.create();
+                            polygon.multiPolygon = am4maps.getCircle(mapPolygon.visualLongitude, mapPolygon.visualLatitude, Math.max(0.2, Math.log(count) * Math.LN10 / 10));
+                            polygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": " + count;
+
+                            mapPolygon.dummyData = polygon;
+                            polygon.events.on("over", function () {
+                                mapPolygon.isHover = true;
+                            })
+                            polygon.events.on("out", function () {
+                                mapPolygon.isHover = false;
+                            })
                         }
                         else {
                             mapPolygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": no data";
                             mapPolygon.fillOpacity = 0.9;
                         }
+                    }
+                    else {
+                        mapPolygon.tooltipText = mapPolygon.dataItem.dataContext.name + ": no data";
+                        mapPolygon.fillOpacity = 0.9;
+                    }
 
-                    })
                 })
+            })
 
-                var data = chartdata;
+            var data = chartdata;
 
-                    //{ "AD": 519.44 };
+            //{ "AD": 519.44 };
 
-                let animation;
-                //uncomment to enable animating the world
-                setTimeout(function () {
-                    animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
-                }, 4000)
+            let animation;
+            //uncomment to enable animating the world
+            setTimeout(function () {
+                animation = chart.animate({ property: "deltaLongitude", to: 100000 }, 20000000);
+            }, 4000)
 
-                //uncomment to re-enable a click to stop option
+            //uncomment to re-enable a click to stop option
 
-                //chart.seriesContainer.events.on("down", function () {
-                //    if (animation) {
-                //        animation.stop();
-                //    }
-                //})
+            //chart.seriesContainer.events.on("down", function () {
+            //    if (animation) {
+            //        animation.stop();
+            //    }
+            //})
 
         })
     },
@@ -344,155 +345,155 @@ displaycharts = {
             'amcharts4/themes/moonrisekingdom'
         ], function (am4core, am4charts, am4themes_animated, am4themes_moonrisekingdom) {
 
-                am4core.useTheme(am4themes_animated)
-                am4core.useTheme(am4themes_moonrisekingdom);
+            am4core.useTheme(am4themes_animated)
+            am4core.useTheme(am4themes_moonrisekingdom);
 
-                function am4themes_mmTheme(target) {
-                    if (target instanceof am4charts.LabelBullet) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4charts.AxisRenderer) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4core.Tooltip) {
-                        target.fontSize = 14;
-                    }
-                    if (target instanceof am4charts.Legend) {
-                        target.fontSize = 14;
-                    }
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.LabelBullet) {
+                    target.fontSize = 14;
                 }
-
-                //dateAxis.tooltip.color = am4core.color("#c1c2c3");
-                //dateAxis.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
-                //dateAxis.renderer.line.stroke = am4core.color("#f1f2f3");
-                //dateAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                //dateAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                //dateAxis.renderer.labels.template.fontSize = 14;
-
-                //valueAxis.renderer.labels.template.fill = am4core.color("#f2f2f2")
-
-                //polygonSeries.tooltip.color = am4core.color("#c1c2c3");
-                //polygonSeries.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
-
-                //valueAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
-                //valueAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
-                //valueAxis.renderer.line.stroke = am4core.color("#f1f2f3");
-
-                am4core.useTheme(am4themes_mmTheme);
-
-                var chart = am4core.create(divid, am4charts.XYChart);
-                chart.padding(0, 15, 0, 15);
-                chart.colors.step = 3;
-
-                // the following line makes value axes to be arranged vertically.
-                chart.leftAxesContainer.layout = "vertical";
-
-                // uncomment this line if you want to change order of axes
-                //chart.bottomAxesContainer.reverseOrder = true;
-
-                var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-                dateAxis.renderer.grid.template.location = 0;
-                dateAxis.renderer.ticks.template.length = 8;
-                dateAxis.renderer.ticks.template.strokeOpacity = 0.1;
-                dateAxis.renderer.grid.template.disabled = true;
-                dateAxis.renderer.ticks.template.disabled = false;
-                dateAxis.renderer.ticks.template.strokeOpacity = 0.2;
-                dateAxis.renderer.minLabelPosition = 0.01;
-                dateAxis.renderer.maxLabelPosition = 0.99;
-                dateAxis.keepSelection = true;
-
-                dateAxis.groupData = true;
-                dateAxis.minZoomCount = 5;
-
-                // these two lines makes the axis to be initially zoomed-in
-                // dateAxis.start = 0.7;
-                // dateAxis.keepSelection = true;
-
-                var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-                valueAxis.tooltip.disabled = true;
-                valueAxis.zIndex = 1;
-                valueAxis.renderer.baseGrid.disabled = true;
-                // height of axis
-                valueAxis.height = am4core.percent(65);
-
-                valueAxis.renderer.gridContainer.background.fill = am4core.color("#000000");
-                valueAxis.renderer.gridContainer.background.fillOpacity = 0.05;
-                valueAxis.renderer.inside = true;
-                valueAxis.renderer.labels.template.verticalCenter = "bottom";
-                valueAxis.renderer.labels.template.padding(2, 2, 2, 2);
-
-                //valueAxis.renderer.maxLabelPosition = 0.95;
-
-                var series = {};
-                var series1 = null;
-
-                for (var seriesdata in chartdata) {
-
-                    series[seriesdata] = chart.series.push(new am4charts.LineSeries());
-                    series[seriesdata].data = chartdata[seriesdata];
-                    series[seriesdata].dataFields.dateX = "date";
-                    series[seriesdata].dataFields.valueY = "value";
-                    series[seriesdata].name = seriesdata;
-                    series[seriesdata].dataFields.valueYShow = "changePercent";
-                    series[seriesdata].tooltipText = "{name}: {valueY.changePercent.formatNumber('[#0c0]+#.00|[#c00]#.##|0')}%";
-                    series[seriesdata].tooltip.getFillFromObject = false;
-                    series[seriesdata].tooltip.getStrokeFromObject = true;
-                    series[seriesdata].tooltip.background.fill = am4core.color("#fff");
-                    series[seriesdata].tooltip.background.strokeWidth = 2;
-                    series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
-
-                    //series[seriesdata].tooltip.animationEasing = 1;//1/2 second
-                    //series[seriesdata].tooltip.animationDuration = 1;
-
-                    series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
-
-                    if (series1 == null) {series1 = seriesdata;}
-
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 14;
                 }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4charts.Legend) {
+                    target.fontSize = 14;
+                }
+            }
 
-                var valueAxis2 = chart.yAxes.push(new am4charts.ValueAxis());
-                valueAxis2.tooltip.disabled = true;
-                // height of axis
-                valueAxis2.height = am4core.percent(35);
-                valueAxis2.zIndex = 3
-                // this makes gap between panels
-                valueAxis2.marginTop = 30;
-                valueAxis2.renderer.baseGrid.disabled = true;
-                valueAxis2.renderer.inside = true;
-                valueAxis2.renderer.labels.template.verticalCenter = "bottom";
-                valueAxis2.renderer.labels.template.padding(2, 2, 2, 2);
-                //valueAxis.renderer.maxLabelPosition = 0.95;
+            //dateAxis.tooltip.color = am4core.color("#c1c2c3");
+            //dateAxis.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
+            //dateAxis.renderer.line.stroke = am4core.color("#f1f2f3");
+            //dateAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
+            //dateAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
+            //dateAxis.renderer.labels.template.fontSize = 14;
 
-                valueAxis2.renderer.gridContainer.background.fill = am4core.color("#000000");
-                valueAxis2.renderer.gridContainer.background.fillOpacity = 0.05;
+            //valueAxis.renderer.labels.template.fill = am4core.color("#f2f2f2")
 
-                //var volumeSeries = chart.series.push(new am4charts.StepLineSeries());
-                //volumeSeries.fillOpacity = 1;
-                //volumeSeries.fill = series[series1].stroke;
-                //volumeSeries.stroke = series[series1].stroke;
-                //volumeSeries.dataFields.dateX = "date";
-                //volumeSeries.dataFields.valueY = "value"//"quantity";
-                //volumeSeries.yAxis = valueAxis2;
-                //volumeSeries.tooltipText = "Volume: {valueY.value}";
-                //volumeSeries.name = "Series 2";
-                //// volume should be summed
-                //volumeSeries.groupFields.valueY = "sum";
-                //volumeSeries.tooltip.label.fill = volumeSeries.stroke;
+            //polygonSeries.tooltip.color = am4core.color("#c1c2c3");
+            //polygonSeries.tooltip.background.fill = am4core.color("rgba(255, 255, 255, 0.1)");
 
-                chart.cursor = new am4charts.XYCursor();
+            //valueAxis.renderer.labels.template.fill = am4core.color("#f1f2f3");
+            //valueAxis.renderer.grid.template.stroke = am4core.color("#c1c2c3");
+            //valueAxis.renderer.line.stroke = am4core.color("#f1f2f3");
 
-                var scrollbarX = new am4charts.XYChartScrollbar();
-                scrollbarX.series.push(series[series1]);
-                scrollbarX.marginBottom = 20;
+            am4core.useTheme(am4themes_mmTheme);
 
-                scrollbarX.height = 50;
+            var chart = am4core.create(divid, am4charts.XYChart);
+            chart.padding(0, 15, 0, 15);
+            chart.colors.step = 3;
 
-                var sbSeries = scrollbarX.scrollbarChart.series.getIndex(0);
-                sbSeries.dataFields.valueYShow = undefined;
-                chart.scrollbarX = scrollbarX;
+            // the following line makes value axes to be arranged vertically.
+            chart.leftAxesContainer.layout = "vertical";
 
-                chart.legend = new am4charts.Legend();
-                chart.legend.labels.template.text = "[normal {color}]{name}[/]";
+            // uncomment this line if you want to change order of axes
+            //chart.bottomAxesContainer.reverseOrder = true;
+
+            var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+            dateAxis.renderer.grid.template.location = 0;
+            dateAxis.renderer.ticks.template.length = 8;
+            dateAxis.renderer.ticks.template.strokeOpacity = 0.1;
+            dateAxis.renderer.grid.template.disabled = true;
+            dateAxis.renderer.ticks.template.disabled = false;
+            dateAxis.renderer.ticks.template.strokeOpacity = 0.2;
+            dateAxis.renderer.minLabelPosition = 0.01;
+            dateAxis.renderer.maxLabelPosition = 0.99;
+            dateAxis.keepSelection = true;
+
+            dateAxis.groupData = true;
+            dateAxis.minZoomCount = 5;
+
+            // these two lines makes the axis to be initially zoomed-in
+            // dateAxis.start = 0.7;
+            // dateAxis.keepSelection = true;
+
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            valueAxis.tooltip.disabled = true;
+            valueAxis.zIndex = 1;
+            valueAxis.renderer.baseGrid.disabled = true;
+            // height of axis
+            valueAxis.height = am4core.percent(65);
+
+            valueAxis.renderer.gridContainer.background.fill = am4core.color("#000000");
+            valueAxis.renderer.gridContainer.background.fillOpacity = 0.05;
+            valueAxis.renderer.inside = true;
+            valueAxis.renderer.labels.template.verticalCenter = "bottom";
+            valueAxis.renderer.labels.template.padding(2, 2, 2, 2);
+
+            //valueAxis.renderer.maxLabelPosition = 0.95;
+
+            var series = {};
+            var series1 = null;
+
+            for (var seriesdata in chartdata) {
+
+                series[seriesdata] = chart.series.push(new am4charts.LineSeries());
+                series[seriesdata].data = chartdata[seriesdata];
+                series[seriesdata].dataFields.dateX = "date";
+                series[seriesdata].dataFields.valueY = "value";
+                series[seriesdata].name = seriesdata;
+                series[seriesdata].dataFields.valueYShow = "changePercent";
+                series[seriesdata].tooltipText = "{name}: {valueY.changePercent.formatNumber('[#0c0]+#.00|[#c00]#.##|0')}%";
+                series[seriesdata].tooltip.getFillFromObject = false;
+                series[seriesdata].tooltip.getStrokeFromObject = true;
+                series[seriesdata].tooltip.background.fill = am4core.color("#fff");
+                series[seriesdata].tooltip.background.strokeWidth = 2;
+                series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
+
+                //series[seriesdata].tooltip.animationEasing = 1;//1/2 second
+                //series[seriesdata].tooltip.animationDuration = 1;
+
+                series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
+
+                if (series1 == null) { series1 = seriesdata; }
+
+            }
+
+            var valueAxis2 = chart.yAxes.push(new am4charts.ValueAxis());
+            valueAxis2.tooltip.disabled = true;
+            // height of axis
+            valueAxis2.height = am4core.percent(35);
+            valueAxis2.zIndex = 3
+            // this makes gap between panels
+            valueAxis2.marginTop = 30;
+            valueAxis2.renderer.baseGrid.disabled = true;
+            valueAxis2.renderer.inside = true;
+            valueAxis2.renderer.labels.template.verticalCenter = "bottom";
+            valueAxis2.renderer.labels.template.padding(2, 2, 2, 2);
+            //valueAxis.renderer.maxLabelPosition = 0.95;
+
+            valueAxis2.renderer.gridContainer.background.fill = am4core.color("#000000");
+            valueAxis2.renderer.gridContainer.background.fillOpacity = 0.05;
+
+            //var volumeSeries = chart.series.push(new am4charts.StepLineSeries());
+            //volumeSeries.fillOpacity = 1;
+            //volumeSeries.fill = series[series1].stroke;
+            //volumeSeries.stroke = series[series1].stroke;
+            //volumeSeries.dataFields.dateX = "date";
+            //volumeSeries.dataFields.valueY = "value"//"quantity";
+            //volumeSeries.yAxis = valueAxis2;
+            //volumeSeries.tooltipText = "Volume: {valueY.value}";
+            //volumeSeries.name = "Series 2";
+            //// volume should be summed
+            //volumeSeries.groupFields.valueY = "sum";
+            //volumeSeries.tooltip.label.fill = volumeSeries.stroke;
+
+            chart.cursor = new am4charts.XYCursor();
+
+            var scrollbarX = new am4charts.XYChartScrollbar();
+            scrollbarX.series.push(series[series1]);
+            scrollbarX.marginBottom = 20;
+
+            scrollbarX.height = 50;
+
+            var sbSeries = scrollbarX.scrollbarChart.series.getIndex(0);
+            sbSeries.dataFields.valueYShow = undefined;
+            chart.scrollbarX = scrollbarX;
+
+            chart.legend = new am4charts.Legend();
+            chart.legend.labels.template.text = "[normal {color}]{name}[/]";
 
         });
     },
@@ -526,40 +527,40 @@ displaycharts = {
             am4core.useTheme(am4themes_mmTheme);
 
             var chart = am4core.create(divid, am4charts.XYChart);
-                chart.paddingRight = 20;
+            chart.paddingRight = 20;
 
             var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-                dateAxis.tooltip.disabled = true;
-                dateAxis.renderer.line.strokeOpacity = 1;
-                dateAxis.renderer.line.strokeWidth = 2;
-                dateAxis.renderer.grid.template.strokeOpacity = 1;
+            dateAxis.tooltip.disabled = true;
+            dateAxis.renderer.line.strokeOpacity = 1;
+            dateAxis.renderer.line.strokeWidth = 2;
+            dateAxis.renderer.grid.template.strokeOpacity = 1;
 
-                dateAxis.renderer.grid.template.strokeWidth = 0.5;
+            dateAxis.renderer.grid.template.strokeWidth = 0.5;
 
-                //dateAxis.baseInterval = { "timeUnit": "minute", "count": 5 };
+            //dateAxis.baseInterval = { "timeUnit": "minute", "count": 5 };
 
-                //dateAxis.groupData = true;
+            //dateAxis.groupData = true;
 
             var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-                valueAxis.tooltip.disabled = true;
-                valueAxis.renderer.minWidth = 35;
-                valueAxis.renderer.line.strokeOpacity = 1;
-                valueAxis.renderer.line.strokeWidth = 2;
-                valueAxis.renderer.grid.template.strokeOpacity = 1;
-               
-                valueAxis.renderer.grid.template.strokeWidth = 1;
+            valueAxis.tooltip.disabled = true;
+            valueAxis.renderer.minWidth = 35;
+            valueAxis.renderer.line.strokeOpacity = 1;
+            valueAxis.renderer.line.strokeWidth = 2;
+            valueAxis.renderer.grid.template.strokeOpacity = 1;
+
+            valueAxis.renderer.grid.template.strokeWidth = 1;
 
             // create a line series for each set of data received
 
-             var series = {};
+            var series = {};
 
-             for (var seriesdata in chartdata) {
-                 series[seriesdata] = chart.series.push(new am4charts.LineSeries());
-                 series[seriesdata].data = chartdata[seriesdata];
-                 series[seriesdata].dataFields.dateX = "date";
-                 series[seriesdata].dataFields.valueY = "value";
-                 series[seriesdata].name = seriesdata;
-                }
+            for (var seriesdata in chartdata) {
+                series[seriesdata] = chart.series.push(new am4charts.LineSeries());
+                series[seriesdata].data = chartdata[seriesdata];
+                series[seriesdata].dataFields.dateX = "date";
+                series[seriesdata].dataFields.valueY = "value";
+                series[seriesdata].name = seriesdata;
+            }
 
             chart.legend = new am4charts.Legend();
             chart.legend.labels.template.text = "[normal {color}]{name}[/]";
@@ -568,17 +569,17 @@ displaycharts = {
             chart.cursor.snapToSeries = series;
             chart.cursor.xAxis = dateAxis;
 
-                //var scrollbarX = new am4charts.XYChartScrollbar();
-                //scrollbarX.series.push(['tjx']);
-                //scrollbarX.maxHeight = "20px"
-                //chart.scrollbarX = scrollbarX;
-                //chart.scrollbarX.background.fill = am4core.color("#dc67ab");
-                //chart.scrollbarX.background.fillOpacity = 0.2;
-                //chart.scrollbarX.maxHeight = "20px"
+            //var scrollbarX = new am4charts.XYChartScrollbar();
+            //scrollbarX.series.push(['tjx']);
+            //scrollbarX.maxHeight = "20px"
+            //chart.scrollbarX = scrollbarX;
+            //chart.scrollbarX.background.fill = am4core.color("#dc67ab");
+            //chart.scrollbarX.background.fillOpacity = 0.2;
+            //chart.scrollbarX.maxHeight = "20px"
 
         });
     },
-     simple_bar_chart: function (chartdata, divid) {
+    simple_bar_chart: function (chartdata, divid) {
 
         require([
             'amcharts4/core',
@@ -843,5 +844,121 @@ displaycharts = {
 
         });
 
+    },
+
+    stock_analysis: function (chartdata, divid) {
+
+        // The chart needs the chartdata to be:
+        //each dates set of data must be complete, no missing entries and they must be in the same order 
+        // the subject of the data must be called subject and the value called value
+
+        require([
+            'amcharts4/core',
+            'amcharts4/charts',
+            'amcharts4/themes/animated',
+            'amcharts4/themes/amchartsdark'
+        ], function (am4core, am4charts, am4themes_animated,  am4themes_amchartsdark) {
+
+            // Themes begin
+            am4core.useTheme(am4themes_animated);
+            am4core.useTheme(am4themes_amchartsdark);
+
+            function am4themes_mmTheme(target) {
+                if (target instanceof am4charts.LabelBullet) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4charts.AxisRenderer) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4core.Tooltip) {
+                    target.fontSize = 14;
+                }
+                if (target instanceof am4charts.Legend) {
+                    target.fontSize = 14;
+                }
+            }
+            am4core.useTheme(am4themes_mmTheme);
+            // Themes end
+
+            var chart = am4core.create(divid, am4charts.XYChart);
+            chart.paddingRight = 20;
+
+            var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+            dateAxis.renderer.grid.template.location = 0;
+            dateAxis.groupData = true;
+            //dateAxis.skipEmptyPeriods = true;
+
+            var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            valueAxis.tooltip.disabled = true;
+
+            //chart.data = chartdata;
+
+            //var series = chart.series.push(new am4charts.CandlestickSeries());
+            //series.dataFields.dateX = "date";
+            //series.dataFields.valueY = "close";
+            //series.dataFields.openValueY = "open";
+            //series.dataFields.lowValueY = "low";
+            //series.dataFields.highValueY = "high";
+            //series.tooltipText = "Open:${openValueY.value}\nLow:${lowValueY.value}\nHigh:${highValueY.value}\nClose:${valueY.value}";
+
+
+            var series = {};
+            var series1 = null;
+
+            for (var seriesdata in chartdata) {
+
+                series[seriesdata] = chart.series.push(new am4charts.CandlestickSeries());
+                series[seriesdata].data = chartdata[seriesdata];
+                series[seriesdata].dataFields.dateX = "date";
+                series[seriesdata].dataFields.valueY = "close";
+                series[seriesdata].dataFields.openValueY = "open";
+                series[seriesdata].dataFields.lowValueY = "low";
+                series[seriesdata].dataFields.highValueY = "high";
+                series[seriesdata].name = seriesdata;
+                series[seriesdata].tooltipText = "{name}:Open:${openValueY.value}\nLow: ${ lowValueY.value } \nHigh: ${ highValueY.value } \nClose: ${ valueY.value }";
+                series[seriesdata].tooltip.getFillFromObject = false;
+                series[seriesdata].tooltip.getStrokeFromObject = true;
+                series[seriesdata].tooltip.background.fill = am4core.color("#fff");
+                series[seriesdata].tooltip.background.strokeWidth = 2;
+                series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
+
+                //series[seriesdata].tooltip.animationEasing = 1;//1/2 second
+                //series[seriesdata].tooltip.animationDuration = 1;
+
+                series[seriesdata].tooltip.label.fill = series[seriesdata].stroke;
+
+                if (series1 == null) { series1 = seriesdata; }
+
+            }
+
+            // important!
+            // candlestick series colors are set in states. 
+            // series.riseFromOpenState.properties.fill = am4core.color("#00ff00");
+            // series.dropFromOpenState.properties.fill = am4core.color("#FF0000");
+            // series.riseFromOpenState.properties.stroke = am4core.color("#00ff00");
+            // series.dropFromOpenState.properties.stroke = am4core.color("#FF0000");
+
+            series[seriesdata].riseFromPreviousState.properties.fillOpacity = 1;
+            series[seriesdata].dropFromPreviousState.properties.fillOpacity = 0;
+
+            chart.cursor = new am4charts.XYCursor();
+            chart.cursor.behavior = "panX";
+
+            // a separate series for scrollbar
+            var lineSeries = chart.series.push(new am4charts.LineSeries());
+            lineSeries.dataFields.dateX = "date";
+            lineSeries.dataFields.valueY = "close";
+            // need to set on default state, as initially series is "show"
+            lineSeries.defaultState.properties.visible = false;
+
+            // hide from legend too (in case there is one)
+            lineSeries.hiddenInLegend = true;
+            lineSeries.fillOpacity = 0.5;
+            lineSeries.strokeOpacity = 0.5;
+
+            var scrollbarX = new am4charts.XYChartScrollbar();
+            scrollbarX.series.push(lineSeries);
+            chart.scrollbarX = scrollbarX;
+        });
     }
 }
