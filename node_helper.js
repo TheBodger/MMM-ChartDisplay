@@ -38,7 +38,7 @@ module.exports = NodeHelper.create({
 
 	start: function () {
 
-		this.debug = true;
+		this.debug = false;
 
 		console.log(this.name + ' is started!');
 		this.consumerstorage = {}; // contains the config and feedstorage
