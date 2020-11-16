@@ -7,6 +7,9 @@
  * MIT Licensed.
  */
 
+
+//git test
+
 var NodeHelper = require("node_helper");
 
 //this.name String The name of the module
