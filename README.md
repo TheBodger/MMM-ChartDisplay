@@ -201,7 +201,7 @@ For all other things amchart, check out their great documentation.
 //simple_line_chart: creates a simple line chart<BR><BR>
 //stock_comparing_values: creates a multiline graph of stock values across a time period, displaying the values as a percentage of the initial value. A good method of comparing the movement of stocks.<BR><BR>
 
-#### flow within the display module showing when the variosu stages occur
+#### flow within the display module showing when the various stages occur
 
 receive data from a chart provider in NDTF
 <pre>
