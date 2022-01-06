@@ -175,7 +175,7 @@ If using keepsubjects, make sure the correct value is added to the subject field
 <pre>
 the input to some chart modules expects the data to be in format of:
 	{seriesname:[{seriesvalues},{seriesvalues}]}
-	for the race bar the seriesname should be a date, and then there will be an array of {subject:"subject name",value:amount}. The arrays must be the same length, contain the same subjects and be sorted intot he same order; otherwise the chart wont work correctly.<BR>
+	for the race bar the seriesname should be a date, and then there will be an array of {subject:"subject name",value:amount}. The arrays must be the same length, contain the same subjects and be sorted into the same order; otherwise the chart wont work correctly.<BR>
 	for the word cloud, the seriesname is the word, and then an array of the count of words {count:countofword},			</pre>
 <BR>			
 The included file, displaycharts.js contains a number of amchart example charts amended to work within a browser / electron / node.js environment such as found in magic mirror. To enable amcharts, the loadam4charts.js is included in this module. 
