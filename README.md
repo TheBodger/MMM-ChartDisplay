@@ -61,6 +61,8 @@ The charts are produced using AMCHARTS.
 		/MagicMirror/modules/MMM-ChartDisplay/amcharts4
 		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/fonts
 		/MagicMirror/modules/MMM-ChartDisplay/amcharts4/geodata
+		
+		Note: amcharts versions > 4 do not work with this module
 
 	To enable AMCHARTS to work within the client side module, requirejs is required.
 
