@@ -75,7 +75,7 @@ The charts are produced using AMCHARTS.
 	```
 	moment
 	isprofanity //will be used in the future
-	linq@3.2.4 (make sure you get the version referenced here: https://github.com/mihaifm/linq / `npm install linq@3`)
+	linq@3.2.4 (make sure you get the version referenced here: https://github.com/mihaifm/linq / npm install linq@3)
 
 	```
 
