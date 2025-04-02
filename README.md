@@ -36,7 +36,7 @@ To provide data to these, there are 3 Chart Provider modules and one Feed Provid
 
 ### Dependencies
 
-Before installing this module, use https://github.com/TheBodger/MMM-ChartUtilities to setup the MMM-Charts... dependencies and  install all modules 
+Before installing this module, use https://github.com/TheBodger/MMM-ChartUtilities to setup the MMM-Charts... dependencies and install all modules required. <B> check you also install other dependencies called out below</B>
 If you are planning to use MMM-FeedProvider modules as well, go to https://github.com/TheBodger/MMM-FeedUtilities and install all modules
 
 The charts are produced using AMCHARTS.
